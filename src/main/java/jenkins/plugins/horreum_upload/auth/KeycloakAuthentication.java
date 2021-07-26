@@ -53,6 +53,10 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 	private String horreumClientSecretID;
 	private String HorreumCredentialsID;
 
+	private String client_secret;
+	private String username;
+	private String password;
+
 	public String getKeyName() {
 		return keyName;
 	}
@@ -113,35 +117,16 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 		final CloseableHttpClient client = clientBuilder.build();
 		final HttpClientUtil clientUtil = new HttpClientUtil();
 
-		//Retrieve Credentials
-		//TODO:: pass in DomainRequirement
-		List<StandardCredentials> credentialsList = CredentialsProvider.lookupCredentials(
-				StandardCredentials.class, // (1)
-				Jenkins.get(), // (1)
-				ACL.SYSTEM
-		) ;
-
-		StandardCredentials usernameCredentials = CredentialsMatchers.firstOrNull(
-				credentialsList,
-				CredentialsMatchers.withId(this.HorreumCredentialsID)
-		);
-
-		StandardCredentials clientSecretCredentials = CredentialsMatchers.firstOrNull(
-				credentialsList,
-				CredentialsMatchers.withId(this.horreumClientSecretID)
-		);
-
-		if (usernameCredentials != null && usernameCredentials instanceof UsernamePasswordCredentials &&
-				clientSecretCredentials != null && clientSecretCredentials instanceof StringCredentials) {
+		if (client_secret != null && username != null && password != null) {
 			final List<HttpRequestNameValuePair> params = new ArrayList<>();
 			params.add(new HttpRequestNameValuePair("client_id", this.clientId));
 			params.add(new HttpRequestNameValuePair("grant_type", "password"));
 			params.add(new HttpRequestNameValuePair("scope", "openid"));
 
 			//Add Secrets
-			params.add(new HttpRequestNameValuePair("client_secret", ((StringCredentials) clientSecretCredentials).getSecret().getPlainText(), true));
-			params.add(new HttpRequestNameValuePair("username", ((UsernamePasswordCredentials) usernameCredentials).getUsername(), true));
-			params.add(new HttpRequestNameValuePair("password", ((UsernamePasswordCredentials) usernameCredentials).getPassword().getPlainText(), true));
+			params.add(new HttpRequestNameValuePair("client_secret", this.client_secret, true));
+			params.add(new HttpRequestNameValuePair("username", this.username, true));
+			params.add(new HttpRequestNameValuePair("password", this.password, true));
 
 			final List<HttpRequestNameValuePair> headers = new ArrayList<>();
 			headers.add(new HttpRequestNameValuePair("content_type", ContentType.APPLICATION_FORM_URLENCODED.toString()));
@@ -189,11 +174,42 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 				throw new IllegalStateException("Error sending request to: " + authUrl);
 			}
 		} else {
-			throw new IllegalStateException("Could not retrieve Horreum Credentials. Please check the Horreum plugin configuration in Global Settings");
+			throw new IllegalStateException("Credentials have not be resolved. Please resolve credentials before running authentication");
 		}
 
 
 		return client;
+	}
+
+	@Override
+	public void resolveCredentials() {
+		//Retrieve Credentials
+		//TODO:: pass in DomainRequirement
+		List<StandardCredentials> credentialsList = CredentialsProvider.lookupCredentials(
+				StandardCredentials.class, // (1)
+				Jenkins.get(), // (1)
+				ACL.SYSTEM
+		) ;
+
+		StandardCredentials usernameCredentials = CredentialsMatchers.firstOrNull(
+				credentialsList,
+				CredentialsMatchers.withId(this.HorreumCredentialsID)
+		);
+
+		StandardCredentials clientSecretCredentials = CredentialsMatchers.firstOrNull(
+				credentialsList,
+				CredentialsMatchers.withId(this.horreumClientSecretID)
+		);
+
+		if (usernameCredentials != null && usernameCredentials instanceof UsernamePasswordCredentials &&
+				clientSecretCredentials != null && clientSecretCredentials instanceof StringCredentials) {
+			this.client_secret = ((StringCredentials) clientSecretCredentials).getSecret().getPlainText();
+			this.username = ((UsernamePasswordCredentials) usernameCredentials).getUsername();
+			this.password = ((UsernamePasswordCredentials) usernameCredentials).getPassword().getPlainText();
+		} else {
+			throw new IllegalStateException("Could not retrieve Horreum Credentials. Please check the Horreum plugin configuration in Global Settings");
+
+		}
 	}
 
 	@Extension

@@ -8,6 +8,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
+import org.antlr.v4.runtime.misc.NotNull;
 import org.apache.http.HttpHeaders;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl;
@@ -27,7 +28,6 @@ import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
-
 import jenkins.plugins.horreum_upload.util.HttpRequestNameValuePair;
 
 /**
@@ -62,12 +62,13 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 	@DataBoundConstructor
 	public HorreumUploadStep(@Nonnull String test, @Nonnull String owner,
 			@Nonnull String access, @Nonnull String startAccessor,
-			@Nonnull String stopAccessor, @Nonnull String jsonFile) {
+			@Nonnull String stopAccessor, @NotNull String schema, @Nonnull String jsonFile) {
 		this.test = test;
 		this.owner = owner;
 		this.access = access;
 		this.startAccessor = startAccessor;
 		this.stopAccessor = stopAccessor;
+		this.schema = schema;
 		this.jsonFile = jsonFile;
 	}
 
@@ -344,6 +345,8 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 			HorreumUploadExecution exec = HorreumUploadExecution.from(step,
 					step.getQuiet() ? TaskListener.NULL : listener,
 					this);
+
+			exec.getAuthenticator().resolveCredentials();
 
 			Launcher launcher = getContext().get(Launcher.class);
 			if (launcher != null) {

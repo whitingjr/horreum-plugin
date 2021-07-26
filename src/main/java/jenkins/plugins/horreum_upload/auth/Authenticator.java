@@ -18,4 +18,6 @@ public interface Authenticator extends Serializable {
 
 	CloseableHttpClient authenticate(HttpClientBuilder clientBuilder, HttpContext context, HttpRequestBase requestBase,
 					  PrintStream logger) throws IOException, InterruptedException;
+
+	void resolveCredentials();
 }

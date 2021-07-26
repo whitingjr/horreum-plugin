@@ -48,7 +48,7 @@ THE SOFTWARE.
 	</licenses>
 
 	<properties>
-		<revision>0.1</revision>
+		<revision>0.1.2</revision>
 		<changelist>-SNAPSHOT</changelist>
 		<gitHubRepo>jenkinsci/</gitHubRepo>
 		<jenkins.version>2.277.4</jenkins.version>

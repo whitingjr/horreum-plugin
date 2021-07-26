@@ -159,6 +159,10 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 		}
 	}
 
+	public Authenticator getAuthenticator() {
+		return authenticator;
+	}
+
 	private PrintStream logger() {
 		if (localLogger == null) {
 			try {
