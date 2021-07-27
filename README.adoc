@@ -1,0 +1,80 @@
+[[horreum-plugin]]
+= Horreum Plugin
+:toc: macro
+:toc-title: Horreum Plugin ToC
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+toc::[]
+
+[abstract]
+.Overview
+This plugin sends a JSON result object to a Horreum instance secured by Keycloak. The request is made as a job
+execution in Jenkins and if the upload is unsuccessful, the job can be marked as failed
+(configurable).
+
+This plugin has been heavily inspired by the Jenkins HTTP Upload Plugin : https://github.com/jenkinsci/http-request-plugin[]
+
+== Features
+
+The following features are available in both Pipeline and traditional project types:
+
+* Upload JSON result object to Horruem
+* Supports Keycloak Authentication
+
+=== Basic plugin features
+
+=== Pipeline features
+
+Example upload of `output.json` to Horreum instance
+
+[source,groovy]
+----
+horreumUpload (
+    test: 'Dummy Test'
+    , owner: 'dev-team'
+    , access: 'PUBLIC'
+    , startAccessor: '$.build-timestamp'
+    , stopAccessor: '$.build-timestamp'
+    , jsonFile: 'run/localhost/output.json'
+)
+
+----
+
+You can access the response status code and content within a groovy script:
+
+[source,groovy]
+----
+def response = horreumUpload (
+    test: 'Dummy Test'
+    , owner: 'dev-team'
+    , access: 'PUBLIC'
+    , startAccessor: '$.build-timestamp'
+    , stopAccessor: '$.build-timestamp'
+    , jsonFile: 'run/localhost/output.json'
+    , abortOnfailure: false
+    , quiet: false
+)
+println("Status: "+response.status)
+println("Content: "+response.content)
+----
+
+== Building
+
+The plugin can be built and tested locally using a Maven Docker container:
+
+[source, bash]
+----
+docker run -it --rm -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn test
+----
+
+== Configure Global Settings
+
+image::docs/images/configure-horreum-global.png[]
+
+
