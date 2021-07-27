@@ -288,6 +288,9 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 		if (consoleLogResponseBody) {
 			logger().println("Response: \n" + response.getContent());
 		}
+		if ((response.getStatus()) >= 400 ) {
+			logger().println("Request Failed: \n" + response.getContent());
+		}
 
 		responseCodeIsValid(response);
 
