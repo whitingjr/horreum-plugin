@@ -60,7 +60,6 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 	private final String url;
 	private final boolean ignoreSslErrors;
 
-	private final String body;
 	private final List<HttpRequestNameValuePair> headers;
 	private final List<HttpRequestNameValuePair> params;
 
@@ -77,24 +76,19 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 
 	static HorreumUploadExecution from(HorreumUpload http,
 									   EnvVars envVars, AbstractBuild<?, ?> build, TaskListener taskListener) {
-		try {
-			String url = envVars.expand(HorreumUploadGlobalConfig.get().getBaseUrl()); //http.resolveUrl(envVars, build, taskListener);
-			String body = http.resolveBody(envVars, build, taskListener);
-			List<HttpRequestNameValuePair> headers = http.resolveHeaders(envVars);
-			List<HttpRequestNameValuePair> params = null; //Need to define params in freestyle project
-			FilePath uploadFile = http.resolveUploadFile(envVars, build);
+		String url = envVars.expand(HorreumUploadGlobalConfig.get().getBaseUrl()); //http.resolveUrl(envVars, build, taskListener);
+		List<HttpRequestNameValuePair> headers = http.resolveHeaders(envVars);
+		List<HttpRequestNameValuePair> params = http.resolveParams(); //Need to define params in freestyle project
+		FilePath uploadFile = http.resolveUploadFile(envVars, build);
 
-			return new HorreumUploadExecution(
-					url, http.getIgnoreSslErrors(),
-					body, headers, params, http.getTimeout(),
-					uploadFile,
-					http.getAuthentication(),
-					http.getConsoleLogResponseBody(),
-					ResponseHandle.NONE,
-					taskListener.getLogger());
-		} catch (IOException e) {
-			throw new IllegalStateException(e);
-		}
+		return new HorreumUploadExecution(
+				url, http.getIgnoreSslErrors(),
+				headers, params, http.getTimeout(),
+				uploadFile,
+				http.getAuthentication(),
+				http.getConsoleLogResponseBody(),
+				ResponseHandle.NONE,
+				taskListener.getLogger());
 	}
 
 	static HorreumUploadExecution from(HorreumUploadStep step, TaskListener taskListener, Execution execution) {
@@ -105,7 +99,7 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 
 		return new HorreumUploadExecution(
 				url, step.isIgnoreSslErrors(),
-				step.getRequestBody(), headers, params,
+				headers, params,
 				step.getTimeout(),
 				uploadFile,
 				step.getAuthentication(),
@@ -116,7 +110,6 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 
 	private HorreumUploadExecution(
 			String url, boolean ignoreSslErrors,
-			String body,
 			List<HttpRequestNameValuePair> headers,
 			List<HttpRequestNameValuePair> params,
 			Integer timeout,
@@ -129,7 +122,6 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 		this.url = url;
 		this.ignoreSslErrors = ignoreSslErrors;
 
-		this.body = body;
 		this.headers = headers;
 		this.params = params;
 		this.timeout = timeout != null ? timeout : -1;
@@ -188,8 +180,8 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 
 			//TODO: tidy up this URL builder
 			RequestAction requestAction = new RequestAction(
-					new URL(clientUtil.getUrlWithParams(new RequestAction(new URL(url), body, params, headers)))
-					, body, params, headers
+					new URL(clientUtil.getUrlWithParams(new RequestAction(new URL(url), params, headers)))
+					, params, headers
 			);
 
 			HttpRequestBase httpRequestBase = clientUtil.createRequestBase(requestAction);

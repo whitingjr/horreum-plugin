@@ -51,7 +51,6 @@ public final class HorreumUploadStep extends AbstractStepImpl {
     private Boolean consoleLogResponseBody    = DescriptorImpl.consoleLogResponseBody;
     private Boolean quiet                     = DescriptorImpl.quiet;
     private String authentication             = DescriptorImpl.authentication;
-    private String requestBody                = DescriptorImpl.requestBody;
     private List<HttpRequestNameValuePair> customHeaders = DescriptorImpl.customHeaders;
 	private ResponseHandle responseHandle = DescriptorImpl.responseHandle;
 
@@ -138,16 +137,6 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 
     public String getAuthentication() {
         return authentication;
-    }
-
-
-	@DataBoundSetter
-    public void setRequestBody(String requestBody) {
-        this.requestBody = requestBody;
-    }
-
-    public String getRequestBody() {
-        return requestBody;
     }
 
     @DataBoundSetter

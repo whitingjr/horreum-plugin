@@ -19,7 +19,6 @@ import org.apache.http.protocol.HttpContext;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.QueryParameter;
 
-import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardCredentials;
@@ -133,7 +132,7 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 
 			URL authUrl = new URL(urlBuilder.toString());
 
-			RequestAction requestAction = new RequestAction(authUrl, null, params, headers);
+			RequestAction requestAction = new RequestAction(authUrl, params, headers);
 
 			try {
 				final HttpResponse authResponse = clientUtil.execute(

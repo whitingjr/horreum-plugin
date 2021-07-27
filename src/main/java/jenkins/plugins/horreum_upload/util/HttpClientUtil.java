@@ -50,25 +50,9 @@ public class HttpClientUtil {
 		HttpEntityEnclosingRequestBase http;
 		http = new HttpPost(uri);
 
-		http.setEntity(makeEntity(requestAction));
+		http.setEntity(toUrlEncoded(requestAction.getParams()));
         return http;
     }
-
-	private HttpEntity makeEntity(RequestAction requestAction) throws
-			UnsupportedEncodingException {
-		if (!Strings.isNullOrEmpty(requestAction.getRequestBody())) {
-			ContentType contentType = null;
-			for (HttpRequestNameValuePair header : requestAction.getHeaders()) {
-				if (HttpHeaders.CONTENT_TYPE.equalsIgnoreCase(header.getName())) {
-					contentType = ContentType.parse(header.getValue());
-					break;
-				}
-			}
-
-			return new StringEntity(requestAction.getRequestBody(), contentType);
-		}
-		return toUrlEncoded(requestAction.getParams());
-	}
 
 	public String getUrlWithParams(RequestAction requestAction) throws IOException {
 		String url = requestAction.getUrl().toString();

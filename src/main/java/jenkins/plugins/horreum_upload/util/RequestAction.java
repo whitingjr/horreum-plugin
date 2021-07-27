@@ -24,18 +24,16 @@ public class RequestAction extends AbstractDescribableImpl<RequestAction> implem
 
 	private static final long serialVersionUID = 7846277147434838878L;
 	private final URL url;
-    private final String requestBody;
     private final List<HttpRequestNameValuePair> params;
     private final List<HttpRequestNameValuePair> headers;
 
     @DataBoundConstructor
     public RequestAction(URL url, String requestBody, List<HttpRequestNameValuePair> params) {
-        this(url,  requestBody, params, null);
+        this(url,   params, null);
     }
 
-    public RequestAction(URL url, String requestBody, List<HttpRequestNameValuePair> params, List<HttpRequestNameValuePair> headers) {
+    public RequestAction(URL url, List<HttpRequestNameValuePair> params, List<HttpRequestNameValuePair> headers) {
         this.url = url;
-        this.requestBody = requestBody;
         this.params = params == null ? new ArrayList<HttpRequestNameValuePair>() : params;
         this.headers = headers  == null ? new ArrayList<HttpRequestNameValuePair>() : headers;
     }
@@ -50,10 +48,6 @@ public class RequestAction extends AbstractDescribableImpl<RequestAction> implem
 
     public List<HttpRequestNameValuePair> getHeaders() {
         return Collections.unmodifiableList(headers);
-    }
-
-    public String getRequestBody() {
-        return requestBody;
     }
 
     @Extension

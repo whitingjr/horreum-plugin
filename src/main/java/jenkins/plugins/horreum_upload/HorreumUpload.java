@@ -11,6 +11,7 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
+import org.antlr.v4.runtime.misc.NotNull;
 import org.apache.http.HttpHeaders;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -47,7 +48,6 @@ import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
 
 import jenkins.plugins.horreum_upload.auth.Authenticator;
-import jenkins.plugins.horreum_upload.util.HttpClientUtil;
 import jenkins.plugins.horreum_upload.util.HttpRequestNameValuePair;
 
 /**
@@ -57,28 +57,44 @@ import jenkins.plugins.horreum_upload.util.HttpRequestNameValuePair;
 //TODO: Make safe functionality as upload step
 public class HorreumUpload extends Builder {
 
-    private @Nonnull String url;
-	private Boolean ignoreSslErrors = DescriptorImpl.ignoreSslErrors;
-    private Boolean passBuildParameters       = DescriptorImpl.passBuildParameters;
-    private String validResponseCodes         = DescriptorImpl.validResponseCodes;
-    private String validResponseContent       = DescriptorImpl.validResponseContent;
-    private MimeType contentType              = DescriptorImpl.contentType;
-    private Integer timeout                   = DescriptorImpl.timeout;
-    private Boolean consoleLogResponseBody    = DescriptorImpl.consoleLogResponseBody;
-    private Boolean quiet                     = DescriptorImpl.quiet;
-    private String authentication             = DescriptorImpl.authentication;
-    private String requestBody                = DescriptorImpl.requestBody;
-    private String jsonFile = DescriptorImpl.jsonFile;
-    private List<HttpRequestNameValuePair> customHeaders = DescriptorImpl.customHeaders;
+	private @Nonnull String test;
+	private @Nonnull String owner;
+	private @Nonnull String access;
+	private @Nonnull String startAccessor;
+	private @Nonnull String stopAccessor;
+	private @Nonnull String schema;
+	private @Nonnull String jsonFile = HorreumUploadStep.DescriptorImpl.jsonFile;
+
+	private boolean ignoreSslErrors = HorreumUploadStep.DescriptorImpl.ignoreSslErrors;
+	private String validResponseCodes         = HorreumUploadStep.DescriptorImpl.validResponseCodes;
+	private String validResponseContent       = HorreumUploadStep.DescriptorImpl.validResponseContent;
+	private MimeType contentType              = HorreumUploadStep.DescriptorImpl.contentType;
+	private Integer timeout                   = HorreumUploadStep.DescriptorImpl.timeout;
+	private Boolean consoleLogResponseBody    = HorreumUploadStep.DescriptorImpl.consoleLogResponseBody;
+	private Boolean quiet                     = HorreumUploadStep.DescriptorImpl.quiet;
+	private String authentication             = HorreumUploadStep.DescriptorImpl.authentication;
+	private String requestBody                = HorreumUploadStep.DescriptorImpl.requestBody;
+	private List<HttpRequestNameValuePair> customHeaders = HorreumUploadStep.DescriptorImpl.customHeaders;
+	private ResponseHandle responseHandle = HorreumUploadStep.DescriptorImpl.responseHandle;
 
 	@DataBoundConstructor
-	public HorreumUpload(@Nonnull String url) {
-		this.url = url;
+	public HorreumUpload(@Nonnull String test, @Nonnull String owner,
+							 @Nonnull String access, @Nonnull String startAccessor,
+							 @Nonnull String stopAccessor, @NotNull String schema, @Nonnull String jsonFile) {
+		this.test = test;
+		this.owner = owner;
+		this.access = access;
+		this.startAccessor = startAccessor;
+		this.stopAccessor = stopAccessor;
+		this.schema = schema;
+		this.jsonFile = jsonFile;
 	}
 
+
+
 	@Nonnull
-	public String getUrl() {
-		return url;
+	public String getTest() {
+		return test;
 	}
 
 	public Boolean getIgnoreSslErrors() {
@@ -90,14 +106,6 @@ public class HorreumUpload extends Builder {
 		this.ignoreSslErrors = ignoreSslErrors;
 	}
 
-	public Boolean getPassBuildParameters() {
-		return passBuildParameters;
-	}
-
-	@DataBoundSetter
-	public void setPassBuildParameters(Boolean passBuildParameters) {
-		this.passBuildParameters = passBuildParameters;
-	}
 
 	@Nonnull
 	public String getValidResponseCodes() {
@@ -107,6 +115,61 @@ public class HorreumUpload extends Builder {
 	@DataBoundSetter
 	public void setValidResponseCodes(String validResponseCodes) {
 		this.validResponseCodes = validResponseCodes;
+	}
+
+	@Nonnull
+	public String getOwner() {
+		return owner;
+	}
+
+	@DataBoundSetter
+	public void setOwner(@Nonnull String owner) {
+		this.owner = owner;
+	}
+
+	@DataBoundSetter
+	public void setTest(@Nonnull String test) {
+		this.test = test;
+	}
+
+	@Nonnull
+	public String getAccess() {
+		return access;
+	}
+
+	@DataBoundSetter
+	public void setAccess(@Nonnull String access) {
+		this.access = access;
+	}
+
+	@Nonnull
+	public String getStartAccessor() {
+		return startAccessor;
+	}
+
+	@DataBoundSetter
+	public void setStartAccessor(@Nonnull String startAccessor) {
+		this.startAccessor = startAccessor;
+	}
+
+	@Nonnull
+	public String getStopAccessor() {
+		return stopAccessor;
+	}
+
+	@DataBoundSetter
+	public void setStopAccessor(@Nonnull String stopAccessor) {
+		this.stopAccessor = stopAccessor;
+	}
+
+	@Nonnull
+	public String getSchema() {
+		return schema;
+	}
+
+	@DataBoundSetter
+	public void setSchema(@Nonnull String schema) {
+		this.schema = schema;
 	}
 
 	public String getValidResponseContent() {
@@ -202,10 +265,10 @@ public class HorreumUpload extends Builder {
 		if (customHeaders == null) {
 			customHeaders = DescriptorImpl.customHeaders;
 		}
-		if (ignoreSslErrors == null) {
-			//default for new job false(DescriptorImpl.ignoreSslErrors) for old ones true to keep same behavior
-			ignoreSslErrors = true;
-		}
+//		if (ignoreSslErrors == null) {
+//			//default for new job false(DescriptorImpl.ignoreSslErrors) for old ones true to keep same behavior
+//			ignoreSslErrors = true;
+//		}
 		if (quiet == null) {
 			quiet = DescriptorImpl.quiet;
 		}
@@ -230,11 +293,6 @@ public class HorreumUpload extends Builder {
 		return l;
 	}
 
-	String resolveUrl(EnvVars envVars,
-					  AbstractBuild<?, ?> build, TaskListener listener) throws IOException {
-		return envVars.expand(getUrl());
-	}
-
 	List<HttpRequestNameValuePair> resolveHeaders(EnvVars envVars) {
 		final List<HttpRequestNameValuePair> headers = new ArrayList<>();
 		if (contentType != null && contentType != MimeType.NOT_SET) {
@@ -249,18 +307,6 @@ public class HorreumUpload extends Builder {
 			headers.add(new HttpRequestNameValuePair(headerName, headerValue, maskValue));
 		}
 		return headers;
-	}
-
-	String resolveBody(EnvVars envVars,
-					  AbstractBuild<?, ?> build, TaskListener listener) throws IOException {
-		String body = envVars.expand(getRequestBody());
-		if (Strings.isNullOrEmpty(body) && Boolean.TRUE.equals(getPassBuildParameters())) {
-			List<HttpRequestNameValuePair> params = createParams(envVars, build, listener);
-			if (!params.isEmpty()) {
-				body = HttpClientUtil.paramsToString(params);
-			}
-		}
-		return body;
 	}
 
 	FilePath resolveUploadFile(EnvVars envVars, AbstractBuild<?,?> build) {
@@ -295,6 +341,9 @@ public class HorreumUpload extends Builder {
 
 		HorreumUploadExecution exec = HorreumUploadExecution.from(this, envVars, build,
 				this.getQuiet() ? TaskListener.NULL : listener);
+
+		exec.getAuthenticator().resolveCredentials();
+
 		VirtualChannel channel = launcher.getChannel();
 		if (channel == null) {
 			throw new IllegalStateException("Launcher doesn't support remoting but it is required");
@@ -304,6 +353,18 @@ public class HorreumUpload extends Builder {
         return true;
     }
 
+	public List<HttpRequestNameValuePair> resolveParams() {
+		List<HttpRequestNameValuePair> params = new ArrayList<>();
+		params.add(new HttpRequestNameValuePair("test",this.test));
+		params.add(new HttpRequestNameValuePair("owner",this.owner));
+		params.add(new HttpRequestNameValuePair("access",this.access));
+		params.add(new HttpRequestNameValuePair("start",this.startAccessor));
+		params.add(new HttpRequestNameValuePair("stop",this.stopAccessor));
+		if (this.schema != null) {
+			params.add(new HttpRequestNameValuePair("schema", this.schema));
+		}
+		return params;
+	}
 	@Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 		public static final boolean ignoreSslErrors = true;
@@ -384,7 +445,16 @@ public class HorreumUpload extends Builder {
             return items;
         }
 
-        public static List<Range<Integer>> parseToRange(String value) {
+		public ListBoxModel doFillAccessItems(@AncestorInPath Item item, @QueryParameter String credentialsId) {
+			ListBoxModel items = new ListBoxModel();
+			items.add("PUBLIC");
+			items.add("PROTECTED");
+			items.add("PRIVATE");
+			return items;
+		}
+
+
+		public static List<Range<Integer>> parseToRange(String value) {
             List<Range<Integer>> validRanges = new ArrayList<>();
 
             if (Strings.isNullOrEmpty(value)) {
