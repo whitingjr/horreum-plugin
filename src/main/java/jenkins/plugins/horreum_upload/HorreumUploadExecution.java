@@ -102,7 +102,7 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 
 		return new HorreumUploadExecution(
 				url, step.isIgnoreSslErrors(),
-				step.isAbortOnFailure(),
+				step.getAbortOnFailure(),
 				headers, params,
 				step.getTimeout(),
 				uploadFile,
