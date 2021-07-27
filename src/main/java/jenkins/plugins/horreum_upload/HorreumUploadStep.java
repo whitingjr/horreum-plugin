@@ -44,6 +44,7 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 	private @Nonnull String jsonFile = DescriptorImpl.jsonFile;
 
 	private boolean ignoreSslErrors = DescriptorImpl.ignoreSslErrors;
+	private boolean abortOnFailure = DescriptorImpl.abortOnFailure;
     private String validResponseCodes         = DescriptorImpl.validResponseCodes;
     private String validResponseContent       = DescriptorImpl.validResponseContent;
     private MimeType contentType              = DescriptorImpl.contentType;
@@ -69,6 +70,15 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 		this.stopAccessor = stopAccessor;
 		this.schema = schema;
 		this.jsonFile = jsonFile;
+	}
+
+	public boolean getAbortOnFailure() {
+		return abortOnFailure;
+	}
+
+	@DataBoundSetter
+	public void setAbortOnFailure(boolean abortOnFailure) {
+		this.abortOnFailure = abortOnFailure;
 	}
 
 	@DataBoundSetter
@@ -254,9 +264,11 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 		return params;
 	}
 
+
 	@Extension
     public static final class DescriptorImpl extends AbstractStepDescriptorImpl {
         public static final boolean ignoreSslErrors = HorreumUpload.DescriptorImpl.ignoreSslErrors;
+        public static final boolean abortOnFailure = HorreumUpload.DescriptorImpl.abortOnFailure;
 		public static final String   validResponseCodes        = HorreumUpload.DescriptorImpl.validResponseCodes;
 		public static final String   validResponseContent      = HorreumUpload.DescriptorImpl.validResponseContent;
 		public static final MimeType contentType               = HorreumUpload.DescriptorImpl.contentType;

@@ -47,6 +47,7 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
 
+import jenkins.plugins.horreum_upload.HorreumUploadStep.DescriptorImpl;
 import jenkins.plugins.horreum_upload.auth.Authenticator;
 import jenkins.plugins.horreum_upload.util.HttpRequestNameValuePair;
 
@@ -66,6 +67,7 @@ public class HorreumUpload extends Builder {
 	private @Nonnull String jsonFile = HorreumUploadStep.DescriptorImpl.jsonFile;
 
 	private boolean ignoreSslErrors = HorreumUploadStep.DescriptorImpl.ignoreSslErrors;
+	private boolean abortOnFailure = HorreumUploadStep.DescriptorImpl.abortOnFailure;
 	private String validResponseCodes         = HorreumUploadStep.DescriptorImpl.validResponseCodes;
 	private String validResponseContent       = HorreumUploadStep.DescriptorImpl.validResponseContent;
 	private MimeType contentType              = HorreumUploadStep.DescriptorImpl.contentType;
@@ -99,6 +101,15 @@ public class HorreumUpload extends Builder {
 
 	public Boolean getIgnoreSslErrors() {
 		return ignoreSslErrors;
+	}
+
+	public boolean getAbortOnFailure() {
+		return abortOnFailure;
+	}
+
+	@DataBoundSetter
+	public void setAbortOnfailure(Boolean abortOnfailure) {
+		this.abortOnFailure = abortOnfailure;
 	}
 
 	@DataBoundSetter
@@ -365,9 +376,11 @@ public class HorreumUpload extends Builder {
 		}
 		return params;
 	}
+
 	@Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 		public static final boolean ignoreSslErrors = true;
+		public static final boolean abortOnFailure = true;
         public static final Boolean  passBuildParameters       = false;
         public static final String   validResponseCodes        = "100:399";
         public static final String   validResponseContent      = "";

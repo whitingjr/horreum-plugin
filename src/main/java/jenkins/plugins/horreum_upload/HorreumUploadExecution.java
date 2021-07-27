@@ -38,6 +38,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
+import hudson.AbortException;
 import hudson.CloseProofOutputStream;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -73,6 +74,7 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 
 	private final OutputStream remoteLogger;
 	private transient PrintStream localLogger;
+	private boolean abortOnFailure;
 
 	static HorreumUploadExecution from(HorreumUpload http,
 									   EnvVars envVars, AbstractBuild<?, ?> build, TaskListener taskListener) {
@@ -83,6 +85,7 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 
 		return new HorreumUploadExecution(
 				url, http.getIgnoreSslErrors(),
+				http.getAbortOnFailure(),
 				headers, params, http.getTimeout(),
 				uploadFile,
 				http.getAuthentication(),
@@ -99,6 +102,7 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 
 		return new HorreumUploadExecution(
 				url, step.isIgnoreSslErrors(),
+				step.isAbortOnFailure(),
 				headers, params,
 				step.getTimeout(),
 				uploadFile,
@@ -109,7 +113,7 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 	}
 
 	private HorreumUploadExecution(
-			String url, boolean ignoreSslErrors,
+			String url, boolean ignoreSslErrors, boolean abortOnFailure,
 			List<HttpRequestNameValuePair> headers,
 			List<HttpRequestNameValuePair> params,
 			Integer timeout,
@@ -121,6 +125,7 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 	) {
 		this.url = url;
 		this.ignoreSslErrors = ignoreSslErrors;
+		this.abortOnFailure = abortOnFailure;
 
 		this.headers = headers;
 		this.params = params;
@@ -278,11 +283,22 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 	}
 
 
-	private void processResponse(ResponseContentSupplier response) {
+	private void processResponse(ResponseContentSupplier response) throws IOException, InterruptedException  {
 		//logs
 		if (consoleLogResponseBody) {
 			logger().println("Response: \n" + response.getContent());
 		}
+
+		responseCodeIsValid(response);
+
+	}
+
+	private void responseCodeIsValid(ResponseContentSupplier response) throws AbortException {
+		//TODO: enable configuration
+		if ((response.getStatus()) < 400 && abortOnFailure) {
+			return;
+		}
+		throw new AbortException("Fail: the returned code " + response.getStatus() + " is not in the accepted range" );
 	}
 
 	private static class NoopTrustManager extends X509ExtendedTrustManager {
