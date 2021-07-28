@@ -105,6 +105,8 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 	public CloseableHttpClient authenticate(HttpClientBuilder clientBuilder, HttpContext context,
 											HttpRequestBase requestBase, PrintStream logger) throws IOException, InterruptedException {
 
+		validateConfiguration();
+
 
 		StringBuilder urlBuilder = new StringBuilder();
 		urlBuilder
@@ -179,6 +181,21 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 
 
 		return client;
+	}
+
+	private void validateConfiguration() throws IllegalStateException {
+		if ( keycloakBaseUrl == null ){
+			throw  new IllegalStateException("Keycloak Base URL can not be empty");
+		}
+		if ( keycloakRealm == null ){
+			throw  new IllegalStateException("Keycloak Realm can not be empty");
+		}
+		if ( clientId == null ){
+			throw  new IllegalStateException("Keycloak Client ID can not be empty");
+		}
+		if ( HorreumCredentialsID == null ){
+			throw  new IllegalStateException("Horreum Credentials can not be empty");
+		}
 	}
 
 	@Override

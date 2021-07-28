@@ -261,10 +261,10 @@ public class HorreumUpload extends Builder {
 			envVars.put(e.getKey(), e.getValue());
 		}
 
-		HorreumUploadExecution exec = HorreumUploadExecution.from(this.config, envVars,
+		HorreumUploadExecutionContext exec = HorreumUploadExecutionContext.from(this.config, envVars,
 				this.getQuiet() ? TaskListener.NULL : listener, () -> this.config.resolveUploadFile(envVars, build));
 
-		exec.getAuthenticator().resolveCredentials();
+		exec.initialiseContext();
 
 		VirtualChannel channel = launcher.getChannel();
 		if (channel == null) {

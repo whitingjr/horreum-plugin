@@ -54,7 +54,7 @@ import jenkins.security.MasterToSlaveCallable;
 /**
  * @author Janario Oliveira
  */
-public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseContentSupplier, RuntimeException> {
+public class HorreumUploadExecutionContext extends MasterToSlaveCallable<ResponseContentSupplier, RuntimeException> {
 
 	private static final long serialVersionUID = -2066857816168989599L;
 	private final String url;
@@ -75,15 +75,19 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 	private transient PrintStream localLogger;
 	private boolean abortOnFailure;
 
-	static HorreumUploadExecution from(HorreumUploadConfig config,
-									   EnvVars envVars, TaskListener taskListener, Supplier<FilePath> filePathSupplier) {
+	//creds from cred store
+	private String client_secret;
+	private String username;
+	private String password;
+
+	static HorreumUploadExecutionContext from(HorreumUploadConfig config,
+											  EnvVars envVars, TaskListener taskListener, Supplier<FilePath> filePathSupplier) {
 		String url = envVars != null ?  envVars.expand(HorreumUploadGlobalConfig.get().getBaseUrl()) : HorreumUploadGlobalConfig.get().getBaseUrl(); //http.resolveUrl(envVars, build, taskListener);
 		List<HttpRequestNameValuePair> headers = config.resolveHeaders(envVars);
 		List<HttpRequestNameValuePair> params = config.resolveParams(); //Need to define params in freestyle project
-		FilePath uploadFile = filePathSupplier.get(); //config.resolveUploadFile(envVars, build);
-		//FilePath uploadFile = execution.resolveUploadFile();
+		FilePath uploadFile = filePathSupplier.get();
 
-		return new HorreumUploadExecution(
+		return new HorreumUploadExecutionContext(
 				url, config.getIgnoreSslErrors(),
 				config.getAbortOnFailure(),
 				headers, params, config.getTimeout(),
@@ -94,7 +98,7 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 				taskListener.getLogger());
 	}
 
-	private HorreumUploadExecution(
+	private HorreumUploadExecutionContext(
 			String url, boolean ignoreSslErrors, boolean abortOnFailure,
 			List<HttpRequestNameValuePair> headers,
 			List<HttpRequestNameValuePair> params,
@@ -136,10 +140,6 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 				KeyStoreException | NoSuchAlgorithmException | KeyManagementException e) {
 			throw new IllegalStateException(e);
 		}
-	}
-
-	public Authenticator getAuthenticator() {
-		return authenticator;
 	}
 
 	private PrintStream logger() {
@@ -284,6 +284,10 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 			return;
 		}
 		throw new AbortException("Fail: the returned code " + response.getStatus() + " is not in the accepted range" );
+	}
+
+	public void initialiseContext(){
+		authenticator.resolveCredentials();
 	}
 
 	private static class NoopTrustManager extends X509ExtendedTrustManager {

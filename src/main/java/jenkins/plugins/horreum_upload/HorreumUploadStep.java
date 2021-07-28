@@ -28,9 +28,6 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import jenkins.plugins.horreum_upload.util.HttpRequestNameValuePair;
 
-/**
- * @author Martin d'Anjou
- */
 public final class HorreumUploadStep extends AbstractStepImpl {
 
 	HorreumUploadConfig config;
@@ -40,6 +37,14 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 							 @Nonnull String access, @Nonnull String startAccessor,
 							 @Nonnull String stopAccessor, @NotNull String schema, @Nonnull String jsonFile) {
 		this.config = new HorreumUploadConfig(test, owner, access, startAccessor, stopAccessor, schema, jsonFile);
+
+		//Populate step config from Global state
+		HorreumUploadGlobalConfig globalConfig =  HorreumUploadGlobalConfig.get();
+		this.config.setKeycloakRealm(globalConfig.getKeycloakRealm());
+		this.config.setHorreumCredentialsID(globalConfig.getCredentialsId());
+		this.config.setKeycloakRealm(globalConfig.getKeycloakRealm());
+		this.config.setHorreumClientSecretID(globalConfig.getClientSecretId());
+
 	}
 
 	public boolean isIgnoreSslErrors() {
@@ -290,11 +295,11 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 
 		@Override
 		protected ResponseContentSupplier run() throws Exception {
-			HorreumUploadExecution exec = HorreumUploadExecution.from(step.config, null, //TODO:: obtain reference to envVars
+			HorreumUploadExecutionContext exec = HorreumUploadExecutionContext.from(step.config, null, //TODO:: obtain reference to envVars
 					step.getQuiet() ? TaskListener.NULL : listener,
 					() -> this.resolveUploadFile());
 
-			exec.getAuthenticator().resolveCredentials();
+			exec.initialiseContext();
 
 			Launcher launcher = getContext().get(Launcher.class);
 			if (launcher != null) {

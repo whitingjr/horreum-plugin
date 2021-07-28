@@ -40,6 +40,10 @@ public class HorreumUploadConfig {
 	private List<HttpRequestNameValuePair> customHeaders = HorreumUploadStep.DescriptorImpl.customHeaders;
 	private ResponseHandle responseHandle = HorreumUploadStep.DescriptorImpl.responseHandle;
 
+	private String keycloakRealm;
+	private String clientId;
+	private String horreumClientSecretID;
+	private String HorreumCredentialsID;
 
 	public HorreumUploadConfig(@Nonnull String test, @Nonnull String owner, @Nonnull String access, @Nonnull String startAccessor, @Nonnull String stopAccessor, @Nonnull String schema, @Nonnull String jsonFile) {
 		this.test = test;
@@ -210,6 +214,40 @@ public class HorreumUploadConfig {
 		this.responseHandle = responseHandle;
 	}
 
+
+	//TODO:: abstract away keycloak specific config
+	public String getKeycloakRealm() {
+		return keycloakRealm;
+	}
+
+	public void setKeycloakRealm(String keycloakRealm) {
+		this.keycloakRealm = keycloakRealm;
+	}
+
+	public String getClientId() {
+		return clientId;
+	}
+
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
+	}
+
+	public String getHorreumClientSecretID() {
+		return horreumClientSecretID;
+	}
+
+	public void setHorreumClientSecretID(String horreumClientSecretID) {
+		this.horreumClientSecretID = horreumClientSecretID;
+	}
+
+	public String getHorreumCredentialsID() {
+		return HorreumCredentialsID;
+	}
+
+	public void setHorreumCredentialsID(String horreumCredentialsID) {
+		HorreumCredentialsID = horreumCredentialsID;
+	}
+
 	List<HttpRequestNameValuePair> createParams(EnvVars envVars, AbstractBuild<?, ?> build, TaskListener listener) throws IOException {
 		Map<String, String> buildVariables = build.getBuildVariables();
 		if (buildVariables.isEmpty()) {
@@ -228,9 +266,6 @@ public class HorreumUploadConfig {
 		return l;
 	}
 
-	List<HttpRequestNameValuePair> resolveHeaders() {
-		return this.resolveHeaders(null);
-	}
 	List<HttpRequestNameValuePair> resolveHeaders(EnvVars envVars) {
 		final List<HttpRequestNameValuePair> headers = new ArrayList<>();
 		if (contentType != null && contentType != MimeType.NOT_SET) {
