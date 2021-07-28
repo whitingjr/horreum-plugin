@@ -52,6 +52,7 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 	private String horreumClientSecretID;
 	private String HorreumCredentialsID;
 
+	//retrieve from creds store before
 	private String client_secret;
 	private String username;
 	private String password;

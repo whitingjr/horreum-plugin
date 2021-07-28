@@ -17,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
@@ -42,10 +43,8 @@ import hudson.AbortException;
 import hudson.CloseProofOutputStream;
 import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.remoting.RemoteOutputStream;
-import jenkins.plugins.horreum_upload.HorreumUploadStep.Execution;
 import jenkins.plugins.horreum_upload.auth.Authenticator;
 import jenkins.plugins.horreum_upload.util.HttpClientUtil;
 import jenkins.plugins.horreum_upload.util.HttpRequestNameValuePair;
@@ -76,39 +75,22 @@ public class HorreumUploadExecution extends MasterToSlaveCallable<ResponseConten
 	private transient PrintStream localLogger;
 	private boolean abortOnFailure;
 
-	static HorreumUploadExecution from(HorreumUpload http,
-									   EnvVars envVars, AbstractBuild<?, ?> build, TaskListener taskListener) {
-		String url = envVars.expand(HorreumUploadGlobalConfig.get().getBaseUrl()); //http.resolveUrl(envVars, build, taskListener);
-		List<HttpRequestNameValuePair> headers = http.resolveHeaders(envVars);
-		List<HttpRequestNameValuePair> params = http.resolveParams(); //Need to define params in freestyle project
-		FilePath uploadFile = http.resolveUploadFile(envVars, build);
+	static HorreumUploadExecution from(HorreumUploadConfig config,
+									   EnvVars envVars, TaskListener taskListener, Supplier<FilePath> filePathSupplier) {
+		String url = envVars != null ?  envVars.expand(HorreumUploadGlobalConfig.get().getBaseUrl()) : HorreumUploadGlobalConfig.get().getBaseUrl(); //http.resolveUrl(envVars, build, taskListener);
+		List<HttpRequestNameValuePair> headers = config.resolveHeaders(envVars);
+		List<HttpRequestNameValuePair> params = config.resolveParams(); //Need to define params in freestyle project
+		FilePath uploadFile = filePathSupplier.get(); //config.resolveUploadFile(envVars, build);
+		//FilePath uploadFile = execution.resolveUploadFile();
 
 		return new HorreumUploadExecution(
-				url, http.getIgnoreSslErrors(),
-				http.getAbortOnFailure(),
-				headers, params, http.getTimeout(),
+				url, config.getIgnoreSslErrors(),
+				config.getAbortOnFailure(),
+				headers, params, config.getTimeout(),
 				uploadFile,
-				http.getAuthentication(),
-				http.getConsoleLogResponseBody(),
+				config.getAuthentication(),
+				config.getConsoleLogResponseBody(),
 				ResponseHandle.NONE,
-				taskListener.getLogger());
-	}
-
-	static HorreumUploadExecution from(HorreumUploadStep step, TaskListener taskListener, Execution execution) {
-		String url = HorreumUploadGlobalConfig.get().getBaseUrl();
-		List<HttpRequestNameValuePair> headers = step.resolveHeaders();
-		List<HttpRequestNameValuePair> params = step.resolveParams();
-		FilePath uploadFile = execution.resolveUploadFile();
-
-		return new HorreumUploadExecution(
-				url, step.isIgnoreSslErrors(),
-				step.getAbortOnFailure(),
-				headers, params,
-				step.getTimeout(),
-				uploadFile,
-				step.getAuthentication(),
-				step.getConsoleLogResponseBody(),
-				step.getResponseHandle(),
 				taskListener.getLogger());
 	}
 

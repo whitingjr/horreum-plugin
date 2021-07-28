@@ -3,7 +3,6 @@ package jenkins.plugins.horreum_upload;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,7 +11,6 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 import org.antlr.v4.runtime.misc.NotNull;
-import org.apache.http.HttpHeaders;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -46,8 +44,6 @@ import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
-
-import jenkins.plugins.horreum_upload.HorreumUploadStep.DescriptorImpl;
 import jenkins.plugins.horreum_upload.auth.Authenticator;
 import jenkins.plugins.horreum_upload.util.HttpRequestNameValuePair;
 
@@ -58,212 +54,183 @@ import jenkins.plugins.horreum_upload.util.HttpRequestNameValuePair;
 //TODO: Make safe functionality as upload step
 public class HorreumUpload extends Builder {
 
-	private @Nonnull String test;
-	private @Nonnull String owner;
-	private @Nonnull String access;
-	private @Nonnull String startAccessor;
-	private @Nonnull String stopAccessor;
-	private @Nonnull String schema;
-	private @Nonnull String jsonFile = HorreumUploadStep.DescriptorImpl.jsonFile;
-
-	private boolean ignoreSslErrors = HorreumUploadStep.DescriptorImpl.ignoreSslErrors;
-	private boolean abortOnFailure = HorreumUploadStep.DescriptorImpl.abortOnFailure;
-	private String validResponseCodes         = HorreumUploadStep.DescriptorImpl.validResponseCodes;
-	private String validResponseContent       = HorreumUploadStep.DescriptorImpl.validResponseContent;
-	private MimeType contentType              = HorreumUploadStep.DescriptorImpl.contentType;
-	private Integer timeout                   = HorreumUploadStep.DescriptorImpl.timeout;
-	private Boolean consoleLogResponseBody    = HorreumUploadStep.DescriptorImpl.consoleLogResponseBody;
-	private Boolean quiet                     = HorreumUploadStep.DescriptorImpl.quiet;
-	private String authentication             = HorreumUploadStep.DescriptorImpl.authentication;
-	private String requestBody                = HorreumUploadStep.DescriptorImpl.requestBody;
-	private List<HttpRequestNameValuePair> customHeaders = HorreumUploadStep.DescriptorImpl.customHeaders;
-	private ResponseHandle responseHandle = HorreumUploadStep.DescriptorImpl.responseHandle;
+	HorreumUploadConfig config;
 
 	@DataBoundConstructor
 	public HorreumUpload(@Nonnull String test, @Nonnull String owner,
-							 @Nonnull String access, @Nonnull String startAccessor,
-							 @Nonnull String stopAccessor, @NotNull String schema, @Nonnull String jsonFile) {
-		this.test = test;
-		this.owner = owner;
-		this.access = access;
-		this.startAccessor = startAccessor;
-		this.stopAccessor = stopAccessor;
-		this.schema = schema;
-		this.jsonFile = jsonFile;
+						 @Nonnull String access, @Nonnull String startAccessor,
+						 @Nonnull String stopAccessor, @NotNull String schema, @Nonnull String jsonFile) {
+		this.config = new HorreumUploadConfig(test, owner, access, startAccessor, stopAccessor, schema, jsonFile);
 	}
 
-
-
-	@Nonnull
-	public String getTest() {
-		return test;
-	}
-
-	public Boolean getIgnoreSslErrors() {
-		return ignoreSslErrors;
+	public boolean isIgnoreSslErrors() {
+		return config.getIgnoreSslErrors();
 	}
 
 	public boolean getAbortOnFailure() {
-		return abortOnFailure;
+		return config.getAbortOnFailure();
 	}
 
 	@DataBoundSetter
-	public void setAbortOnfailure(Boolean abortOnfailure) {
-		this.abortOnFailure = abortOnfailure;
+	public void setAbortOnFailure(boolean abortOnFailure) {
+		this.config.setAbortOnFailure(abortOnFailure);
 	}
 
 	@DataBoundSetter
-	public void setIgnoreSslErrors(Boolean ignoreSslErrors) {
-		this.ignoreSslErrors = ignoreSslErrors;
-	}
-
-
-	@Nonnull
-	public String getValidResponseCodes() {
-		return validResponseCodes;
+	public void setIgnoreSslErrors(boolean ignoreSslErrors) {
+		this.config.setIgnoreSslErrors(ignoreSslErrors);
 	}
 
 	@DataBoundSetter
 	public void setValidResponseCodes(String validResponseCodes) {
-		this.validResponseCodes = validResponseCodes;
+		this.config.setValidResponseCodes(validResponseCodes);
 	}
 
-	@Nonnull
-	public String getOwner() {
-		return owner;
-	}
-
-	@DataBoundSetter
-	public void setOwner(@Nonnull String owner) {
-		this.owner = owner;
-	}
-
-	@DataBoundSetter
-	public void setTest(@Nonnull String test) {
-		this.test = test;
-	}
-
-	@Nonnull
-	public String getAccess() {
-		return access;
-	}
-
-	@DataBoundSetter
-	public void setAccess(@Nonnull String access) {
-		this.access = access;
-	}
-
-	@Nonnull
-	public String getStartAccessor() {
-		return startAccessor;
-	}
-
-	@DataBoundSetter
-	public void setStartAccessor(@Nonnull String startAccessor) {
-		this.startAccessor = startAccessor;
-	}
-
-	@Nonnull
-	public String getStopAccessor() {
-		return stopAccessor;
-	}
-
-	@DataBoundSetter
-	public void setStopAccessor(@Nonnull String stopAccessor) {
-		this.stopAccessor = stopAccessor;
-	}
-
-	@Nonnull
-	public String getSchema() {
-		return schema;
-	}
-
-	@DataBoundSetter
-	public void setSchema(@Nonnull String schema) {
-		this.schema = schema;
-	}
-
-	public String getValidResponseContent() {
-		return validResponseContent;
+	public String getValidResponseCodes() {
+		return this.config.getValidResponseCodes();
 	}
 
 	@DataBoundSetter
 	public void setValidResponseContent(String validResponseContent) {
-		this.validResponseContent = validResponseContent;
+		this.config.setValidResponseContent(validResponseContent);
 	}
 
-
-	public MimeType getContentType() {
-		return contentType;
+	public String getValidResponseContent() {
+		return config.getValidResponseContent();
 	}
 
 	@DataBoundSetter
 	public void setContentType(MimeType contentType) {
-		this.contentType = contentType;
+		this.config.setContentType(contentType);
 	}
 
-	public Integer getTimeout() {
-		return timeout;
+	public MimeType getContentType() {
+		return config.getContentType();
 	}
 
 	@DataBoundSetter
 	public void setTimeout(Integer timeout) {
-		this.timeout = timeout;
+		this.config.setTimeout(timeout);
 	}
 
-	public Boolean getConsoleLogResponseBody() {
-		return consoleLogResponseBody;
+	public Integer getTimeout() {
+		return config.getTimeout();
 	}
 
 	@DataBoundSetter
 	public void setConsoleLogResponseBody(Boolean consoleLogResponseBody) {
-		this.consoleLogResponseBody = consoleLogResponseBody;
+		this.config.setConsoleLogResponseBody(consoleLogResponseBody);
 	}
 
-	public Boolean getQuiet() {
-		return quiet;
+	public Boolean getConsoleLogResponseBody() {
+		return config.getConsoleLogResponseBody();
 	}
 
 	@DataBoundSetter
 	public void setQuiet(Boolean quiet) {
-		this.quiet = quiet;
+		this.config.setQuiet(quiet);
 	}
 
-	public String getAuthentication() {
-		return authentication;
+	public Boolean getQuiet() {
+		return config.getQuiet();
 	}
 
 	@DataBoundSetter
 	public void setAuthentication(String authentication) {
-		this.authentication = authentication;
+		this.config.setAuthentication(authentication);
 	}
 
-	public String getRequestBody() {
-		return requestBody;
-	}
-
-	@DataBoundSetter
-	public void setRequestBody(String requestBody) {
-		this.requestBody = requestBody;
-	}
-
-	public List<HttpRequestNameValuePair> getCustomHeaders() {
-		return customHeaders;
+	public String getAuthentication() {
+		return config.getAuthentication();
 	}
 
 	@DataBoundSetter
 	public void setCustomHeaders(List<HttpRequestNameValuePair> customHeaders) {
-		this.customHeaders = customHeaders;
+		this.config.setCustomHeaders(customHeaders);
+	}
+
+	public String getTest() {
+		return config.getTest();
+	}
+
+	@DataBoundSetter
+	public void setTest(String test) {
+		this.config.setTest(test);
+	}
+
+	public String getOwner() {
+		return config.getOwner();
+	}
+
+	@DataBoundSetter
+	public void setOwner(String owner) {
+		this.config.setOwner(owner);
+	}
+
+	public String getAccess() {
+		return this.config.getAccess();
+	}
+
+	@DataBoundSetter
+	public void setAccess(String access) {
+		this.config.setAccess(access);
+	}
+
+	public String getStartAccessor() {
+		return config.getStartAccessor();
+	}
+
+	@DataBoundSetter
+	public void setStartAccessor(String startAccessor) {
+		this.config.setStartAccessor(startAccessor);
+	}
+
+	public String getStopAccessor() {
+		return config.getStopAccessor();
+	}
+
+	@DataBoundSetter
+	public void setSchema(String schema) {
+		this.config.setSchema(schema);
+	}
+
+	public String getSchema() {
+		return config.getSchema();
+	}
+
+	@DataBoundSetter
+	public void setStopAccessor(String stopAccessor) {
+		this.config.setStopAccessor(stopAccessor);
+	}
+
+	public List<HttpRequestNameValuePair> getCustomHeaders() {
+		return config.getCustomHeaders();
+	}
+
+	public ResponseHandle getResponseHandle() {
+		return config.getResponseHandle();
+	}
+
+
+	@DataBoundSetter
+	public void setResponseHandle(ResponseHandle responseHandle) {
+		this.config.setResponseHandle(responseHandle);
 	}
 
 	public String getJsonFile() {
-		return jsonFile;
+		return config.getJsonFile();
 	}
 
 	@DataBoundSetter
 	public void setJsonFile(String jsonFile) {
-		this.jsonFile = jsonFile;
+		this.config.setJsonFile(jsonFile);
 	}
+
+
+//	@Override
+//	public HorreumUploadStep.DescriptorImpl getDescriptor() {
+//		return (HorreumUploadStep.DescriptorImpl) super.getDescriptor();
+//	}
 
 	@Initializer(before = InitMilestone.PLUGINS_STARTED)
 	public static void xStreamCompatibility() {
@@ -273,85 +240,29 @@ public class HorreumUpload extends Builder {
 	}
 
 	protected Object readResolve() {
-		if (customHeaders == null) {
-			customHeaders = DescriptorImpl.customHeaders;
+		if (config.getCustomHeaders() == null) {
+			config.setCustomHeaders(DescriptorImpl.customHeaders);
 		}
 //		if (ignoreSslErrors == null) {
 //			//default for new job false(DescriptorImpl.ignoreSslErrors) for old ones true to keep same behavior
 //			ignoreSslErrors = true;
 //		}
-		if (quiet == null) {
-			quiet = DescriptorImpl.quiet;
+		if (config.getQuiet() == null) {
+			config.setQuiet(DescriptorImpl.quiet);
 		}
 		return this;
 	}
 
-	private List<HttpRequestNameValuePair> createParams(EnvVars envVars, AbstractBuild<?, ?> build, TaskListener listener) throws IOException {
-		Map<String, String> buildVariables = build.getBuildVariables();
-		if (buildVariables.isEmpty()) {
-			return Collections.emptyList();
-		}
-		PrintStream logger = listener.getLogger();
-		logger.println("Parameters: ");
-
-		List<HttpRequestNameValuePair> l = new ArrayList<>();
-		for (Map.Entry<String, String> entry : buildVariables.entrySet()) {
-			String value = envVars.expand(entry.getValue());
-			logger.println("  " + entry.getKey() + " = " + value);
-
-			l.add(new HttpRequestNameValuePair(entry.getKey(), value));
-		}
-		return l;
-	}
-
-	List<HttpRequestNameValuePair> resolveHeaders(EnvVars envVars) {
-		final List<HttpRequestNameValuePair> headers = new ArrayList<>();
-		if (contentType != null && contentType != MimeType.NOT_SET) {
-			headers.add(new HttpRequestNameValuePair(HttpHeaders.CONTENT_TYPE, contentType.getContentType().toString()));
-		}
-		for (HttpRequestNameValuePair header : customHeaders) {
-			String headerName = envVars.expand(header.getName());
-			String headerValue = envVars.expand(header.getValue());
-			boolean maskValue = headerName.equalsIgnoreCase(HttpHeaders.AUTHORIZATION) ||
-					header.getMaskValue();
-
-			headers.add(new HttpRequestNameValuePair(headerName, headerValue, maskValue));
-		}
-		return headers;
-	}
-
-	FilePath resolveUploadFile(EnvVars envVars, AbstractBuild<?,?> build) {
-		if (jsonFile == null || jsonFile.trim().isEmpty()) {
-			return null;
-		}
-		String filePath = envVars.expand(jsonFile);
-		try {
-			FilePath workspace = build.getWorkspace();
-			if (workspace == null) {
-				throw new IllegalStateException("Could not find workspace to check existence of upload file: " + jsonFile +
-						". You should use it inside a 'node' block");
-			}
-			FilePath uploadFilePath = workspace.child(filePath);
-				if (!uploadFilePath.exists()) {
-					throw new IllegalStateException("Could not find upload file: " + jsonFile);
-				}
-			return uploadFilePath;
-		} catch (IOException | InterruptedException e) {
-			throw new IllegalStateException(e);
-		}
-	}
-
-    @Override
-    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener)
-    throws InterruptedException, IOException
-    {
+	@Override
+	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
+			throws InterruptedException, IOException {
 		EnvVars envVars = build.getEnvironment(listener);
 		for (Map.Entry<String, String> e : build.getBuildVariables().entrySet()) {
 			envVars.put(e.getKey(), e.getValue());
 		}
 
-		HorreumUploadExecution exec = HorreumUploadExecution.from(this, envVars, build,
-				this.getQuiet() ? TaskListener.NULL : listener);
+		HorreumUploadExecution exec = HorreumUploadExecution.from(this.config, envVars,
+				this.getQuiet() ? TaskListener.NULL : listener, () -> this.config.resolveUploadFile(envVars, build));
 
 		exec.getAuthenticator().resolveCredentials();
 
@@ -361,71 +272,66 @@ public class HorreumUpload extends Builder {
 		}
 		channel.call(exec);
 
-        return true;
-    }
+		return true;
+	}
 
-	public List<HttpRequestNameValuePair> resolveParams() {
-		List<HttpRequestNameValuePair> params = new ArrayList<>();
-		params.add(new HttpRequestNameValuePair("test",this.test));
-		params.add(new HttpRequestNameValuePair("owner",this.owner));
-		params.add(new HttpRequestNameValuePair("access",this.access));
-		params.add(new HttpRequestNameValuePair("start",this.startAccessor));
-		params.add(new HttpRequestNameValuePair("stop",this.stopAccessor));
-		if (this.schema != null) {
-			params.add(new HttpRequestNameValuePair("schema", this.schema));
-		}
-		return params;
+	public List<HttpRequestNameValuePair> resolveHeaders(EnvVars envVars) {
+		return config.resolveHeaders(envVars);
+	}
+
+	public FilePath resolveUploadFile(EnvVars envVars, AbstractBuild<?, ?> build) {
+		return config.resolveUploadFile(envVars, build);
 	}
 
 	@Extension
-    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+	public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 		public static final boolean ignoreSslErrors = true;
 		public static final boolean abortOnFailure = true;
-        public static final Boolean  passBuildParameters       = false;
-        public static final String   validResponseCodes        = "100:399";
-        public static final String   validResponseContent      = "";
-        public static final MimeType contentType               = MimeType.APPLICATION_JSON;
-        public static final int      timeout                   = 0;
-        public static final Boolean  consoleLogResponseBody    = false;
-        public static final Boolean  quiet                     = false;
-        public static final String   authentication            = "keycloak";
-        public static final String   requestBody               = "";
-        public static final String jsonFile = "";
-        public static final List <HttpRequestNameValuePair> customHeaders = Collections.emptyList();
+		public static final Boolean passBuildParameters = false;
+		public static final String validResponseCodes = "100:399";
+		public static final String validResponseContent = "";
+		public static final MimeType contentType = MimeType.APPLICATION_JSON;
+		public static final int timeout = 0;
+		public static final Boolean consoleLogResponseBody = false;
+		public static final Boolean quiet = false;
+		public static final String authentication = "keycloak";
+		public static final String requestBody = "";
+		public static final String jsonFile = "";
+		public static final List<HttpRequestNameValuePair> customHeaders = Collections.emptyList();
 
-        public DescriptorImpl() {
-            load();
-        }
+		public DescriptorImpl() {
+			load();
+		}
 
-        @SuppressWarnings("rawtypes")
-        @Override
-        public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-            return true;
-        }
+		@SuppressWarnings("rawtypes")
+		@Override
+		public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+			return true;
+		}
 
-        @Override
-        public String getDisplayName() {
-            return "Horreum Upload";
-        }
+		@Override
+		public String getDisplayName() {
+			return "Horreum Upload";
+		}
 
-        public ListBoxModel doFillHttpModeItems() {
-            return HttpMode.getFillItems();
-        }
+		public ListBoxModel doFillHttpModeItems() {
+			return HttpMode.getFillItems();
+		}
 
-        public ListBoxModel doFillAcceptTypeItems() {
-            return MimeType.getContentTypeFillItems();
-        }
+		public ListBoxModel doFillAcceptTypeItems() {
+			return MimeType.getContentTypeFillItems();
+		}
 
-        public ListBoxModel doFillContentTypeItems() {
-            return MimeType.getContentTypeFillItems();
-        }
+		public ListBoxModel doFillContentTypeItems() {
+			return MimeType.getContentTypeFillItems();
+		}
 
-        public ListBoxModel doFillAuthenticationItems(@AncestorInPath Item project,
+		public ListBoxModel doFillAuthenticationItems(@AncestorInPath Item project,
 													  @QueryParameter String url) {
-            return fillAuthenticationItems(project, url);
-        }
+			return fillAuthenticationItems(project, url);
+		}
 
-        public ListBoxModel doFillProxyAuthenticationItems(@AncestorInPath Item project,
+		public ListBoxModel doFillProxyAuthenticationItems(@AncestorInPath Item project,
 														   @QueryParameter String url) {
 			if (project == null || !project.hasPermission(Item.CONFIGURE)) {
 				return new StandardListBoxModel();
@@ -438,14 +344,14 @@ public class HorreumUpload extends Builder {
 			}
 		}
 
-        public static ListBoxModel fillAuthenticationItems(Item project, String url) {
+		public static ListBoxModel fillAuthenticationItems(Item project, String url) {
 			if (project == null || !project.hasPermission(Item.CONFIGURE)) {
 				return new StandardListBoxModel();
 			}
 
 			List<Option> options = new ArrayList<>();
 
-            for (Authenticator authenticator : HorreumUploadGlobalConfig.get().getAuthentications()) {
+			for (Authenticator authenticator : HorreumUploadGlobalConfig.get().getAuthentications()) {
 				options.add(new Option(authenticator.getKeyName()));
 			}
 
@@ -455,8 +361,8 @@ public class HorreumUpload extends Builder {
 							project, StandardUsernamePasswordCredentials.class,
 							URIRequirementBuilder.fromUri(url).build());
 			items.addMissing(options);
-            return items;
-        }
+			return items;
+		}
 
 		public ListBoxModel doFillAccessItems(@AncestorInPath Item item, @QueryParameter String credentialsId) {
 			ListBoxModel items = new ListBoxModel();
@@ -468,57 +374,57 @@ public class HorreumUpload extends Builder {
 
 
 		public static List<Range<Integer>> parseToRange(String value) {
-            List<Range<Integer>> validRanges = new ArrayList<>();
+			List<Range<Integer>> validRanges = new ArrayList<>();
 
-            if (Strings.isNullOrEmpty(value)) {
-                value = HorreumUpload.DescriptorImpl.validResponseCodes;
-            }
+			if (Strings.isNullOrEmpty(value)) {
+				value = HorreumUpload.DescriptorImpl.validResponseCodes;
+			}
 
-            String[] codes = value.split(",");
-            for (String code : codes) {
-                String[] fromTo = code.trim().split(":");
-                checkArgument(fromTo.length <= 2, "Code %s should be an interval from:to or a single value", code);
+			String[] codes = value.split(",");
+			for (String code : codes) {
+				String[] fromTo = code.trim().split(":");
+				checkArgument(fromTo.length <= 2, "Code %s should be an interval from:to or a single value", code);
 
-                Integer from;
-                try {
-                    from = Integer.parseInt(fromTo[0]);
-                } catch (NumberFormatException nfe) {
-                    throw new IllegalArgumentException("Invalid number "+fromTo[0]);
-                }
+				Integer from;
+				try {
+					from = Integer.parseInt(fromTo[0]);
+				} catch (NumberFormatException nfe) {
+					throw new IllegalArgumentException("Invalid number " + fromTo[0]);
+				}
 
-                Integer to = from;
-                if (fromTo.length != 1) {
-                    try {
-                        to = Integer.parseInt(fromTo[1]);
-                    } catch (NumberFormatException nfe) {
-                        throw new IllegalArgumentException("Invalid number "+fromTo[1]);
-                    }
-                }
+				Integer to = from;
+				if (fromTo.length != 1) {
+					try {
+						to = Integer.parseInt(fromTo[1]);
+					} catch (NumberFormatException nfe) {
+						throw new IllegalArgumentException("Invalid number " + fromTo[1]);
+					}
+				}
 
-                checkArgument(from <= to, "Interval %s should be FROM less than TO", code);
-                validRanges.add(Ranges.closed(from, to));
-            }
+				checkArgument(from <= to, "Interval %s should be FROM less than TO", code);
+				validRanges.add(Ranges.closed(from, to));
+			}
 
-            return validRanges;
-        }
+			return validRanges;
+		}
 
-        public FormValidation doCheckValidResponseCodes(@QueryParameter String value) {
-            return checkValidResponseCodes(value);
-        }
+		public FormValidation doCheckValidResponseCodes(@QueryParameter String value) {
+			return checkValidResponseCodes(value);
+		}
 
-        public static FormValidation checkValidResponseCodes(String value) {
-            if (value == null || value.trim().isEmpty()) {
-                return FormValidation.ok();
-            }
+		public static FormValidation checkValidResponseCodes(String value) {
+			if (value == null || value.trim().isEmpty()) {
+				return FormValidation.ok();
+			}
 
-            try {
-                parseToRange(value);
-            } catch (IllegalArgumentException iae) {
-                return FormValidation.error("Response codes expected is wrong. "+iae.getMessage());
-            }
-            return FormValidation.ok();
+			try {
+				parseToRange(value);
+			} catch (IllegalArgumentException iae) {
+				return FormValidation.error("Response codes expected is wrong. " + iae.getMessage());
+			}
+			return FormValidation.ok();
 
-        }
-    }
+		}
+	}
 
 }
