@@ -119,14 +119,16 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 		final CloseableHttpClient client = clientBuilder.build();
 		final HttpClientUtil clientUtil = new HttpClientUtil();
 
-		if (client_secret != null && username != null && password != null) {
+		if (username != null && password != null) {
 			final List<HttpRequestNameValuePair> params = new ArrayList<>();
 			params.add(new HttpRequestNameValuePair("client_id", this.clientId));
 			params.add(new HttpRequestNameValuePair("grant_type", "password"));
 			params.add(new HttpRequestNameValuePair("scope", "openid"));
 
 			//Add Secrets
-			params.add(new HttpRequestNameValuePair("client_secret", this.client_secret, true));
+			if ( client_secret != null ) {
+				params.add(new HttpRequestNameValuePair("client_secret", this.client_secret, true));
+			}
 			params.add(new HttpRequestNameValuePair("username", this.username, true));
 			params.add(new HttpRequestNameValuePair("password", this.password, true));
 
@@ -213,14 +215,16 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 				CredentialsMatchers.withId(this.HorreumCredentialsID)
 		);
 
-		StandardCredentials clientSecretCredentials = CredentialsMatchers.firstOrNull(
-				credentialsList,
-				CredentialsMatchers.withId(this.horreumClientSecretID)
-		);
+		StandardCredentials clientSecretCredentials = null;
+		if ( this.horreumClientSecretID != null ) {
+			clientSecretCredentials = CredentialsMatchers.firstOrNull(
+					credentialsList,
+					CredentialsMatchers.withId(this.horreumClientSecretID)
+			);
+		}
 
-		if (usernameCredentials != null && usernameCredentials instanceof UsernamePasswordCredentials &&
-				clientSecretCredentials != null && clientSecretCredentials instanceof StringCredentials) {
-			this.client_secret = ((StringCredentials) clientSecretCredentials).getSecret().getPlainText();
+		if (usernameCredentials != null && usernameCredentials instanceof UsernamePasswordCredentials ) {
+			this.client_secret = clientSecretCredentials != null ? ((StringCredentials) clientSecretCredentials).getSecret().getPlainText() : null;
 			this.username = ((UsernamePasswordCredentials) usernameCredentials).getUsername();
 			this.password = ((UsernamePasswordCredentials) usernameCredentials).getPassword().getPlainText();
 		} else {
