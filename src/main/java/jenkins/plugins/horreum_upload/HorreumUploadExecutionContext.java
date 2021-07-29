@@ -84,6 +84,7 @@ public class HorreumUploadExecutionContext extends MasterToSlaveCallable<Respons
 											  EnvVars envVars, TaskListener taskListener, Supplier<FilePath> filePathSupplier) {
 		String url = envVars != null ?  envVars.expand(HorreumUploadGlobalConfig.get().getBaseUrl()) : HorreumUploadGlobalConfig.get().getBaseUrl(); //http.resolveUrl(envVars, build, taskListener);
 		List<HttpRequestNameValuePair> headers = config.resolveHeaders(envVars);
+		headers.add(new HttpRequestNameValuePair("Accept", "*/*"));
 		List<HttpRequestNameValuePair> params = config.resolveParams(); //Need to define params in freestyle project
 		FilePath uploadFile = filePathSupplier.get();
 
@@ -290,7 +291,7 @@ public class HorreumUploadExecutionContext extends MasterToSlaveCallable<Respons
 		authenticator.resolveCredentials();
 	}
 
-	private static class NoopTrustManager extends X509ExtendedTrustManager {
+	static class NoopTrustManager extends X509ExtendedTrustManager {
 
 		@Override
 		public void checkClientTrusted(X509Certificate[] arg0, String arg1)

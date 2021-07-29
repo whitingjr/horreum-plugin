@@ -1,7 +1,9 @@
 package jenkins.plugins.horreum_upload;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +28,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.testcontainers.containers.ContainerState;
@@ -41,12 +42,11 @@ import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 import com.google.common.io.CharStreams;
 
 import hudson.util.Secret;
-import jenkins.model.GlobalConfiguration;
 
-public class HorreumPlpuginTestBase {
+public class HorreumPluginTestBase {
 	private static final String HORREUM_KEYCLOAK_REALM = "horreum";
-	private static final String HORREUM_KEYCLOAK_BASE_URL = "http://127.0.0.1:8180";
-	private static final String HORREUM_BASE_URL = "http://127.0.0.1:8082/api/run/data";
+	private static final String HORREUM_KEYCLOAK_BASE_URL = "http://172.17.0.1:8180";
+	private static final String HORREUM_BASE_URL = "http://localhost:8082/api/run/data";
 	private static final String HORREUM_CLIENT_ID = "horreum-ui";
 
 	public static final String HORREUM_UPLOAD_CREDENTIALS = "horreum-creds";
@@ -57,7 +57,8 @@ public class HorreumPlpuginTestBase {
 
 	private static ServerRunning SERVER;
 	static final String ALL_IS_WELL = "All is well";
-	private static boolean spinUpHorreumInfra = false;
+	private static boolean spinUpHorreumInfra = true;
+	private static boolean dumpHorreumLogs = true;
 
 
 	@Rule
@@ -124,6 +125,22 @@ public class HorreumPlpuginTestBase {
 			SERVER.server.stop();
 			SERVER = null;
 		}
+		if ( dumpHorreumLogs ){
+			Optional<ContainerState> containerState =  environment.getContainerByServiceName("horreum_1"); //TODO: dynamic resolve
+			if (containerState.isPresent()){
+				String logs = containerState.get().getLogs(OutputType.STDOUT);
+				File tmpFile = File.createTempFile("horreum-jenkins", ".log");
+				BufferedWriter writer = new BufferedWriter(new FileWriter(tmpFile));
+				writer.write(logs);
+				writer.close();
+				System.out.println("Logs written to: " + tmpFile.getAbsolutePath());
+			}
+
+		}
+		if (environment != null){
+			environment.stop();
+			environment = null;
+		}
 	}
 
 	@Before
@@ -136,7 +153,7 @@ public class HorreumPlpuginTestBase {
 		//TODO register Horreum global config
 		HorreumUploadGlobalConfig globalConfig = HorreumUploadGlobalConfig.get(); //  j.jenkins.getDescriptorList(GlobalConfiguration.class).get(HorreumUploadGlobalConfig.class);
 		if (globalConfig != null) {
-			globalConfig.setBaseUrl("http://localhost:8082");
+			globalConfig.setBaseUrl("http://127.0.0.1:8082");
 			globalConfig.setKeycloakRealm(HORREUM_KEYCLOAK_REALM);
 			globalConfig.setClientId(HORREUM_CLIENT_ID);
 			globalConfig.setKeycloakBaseUrl(HORREUM_KEYCLOAK_BASE_URL);
@@ -219,7 +236,16 @@ public class HorreumPlpuginTestBase {
 
 			server.start();
 			port = connector.getLocalPort();
-			baseURL = "http://localhost:" + port;
+			baseURL = "http://127.0.0.1:" + port;
 		}
 	}
+
+//	void createNewTest(String dummy) {
+//		HorreumUploadConfig config = new HorreumUploadConfig();
+//
+//		HorreumUploadExecutionContext.from(config, null, () -> null, () -> null);
+//
+//
+//	}
+
 }

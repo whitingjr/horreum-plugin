@@ -67,6 +67,12 @@ INSERT INTO view (id,name,test_id) VALUES (2,'default',2);
 UPDATE test SET defaultview_id = 2 WHERE id = 2;
 INSERT INTO viewcomponent (id,accessors,headername,headerorder,render,view_id) VALUES (9,'runId','Run ID',0,NULL,2);
 
+
+INSERT INTO schema (id,name,uri,owner,access) VALUES (3,'Dummy','urn:spec:dummy','dev-team',0);
+INSERT INTO test (id,name,description,defaultview_id,owner,access) VALUES (3,'Dummy','dummy benchmark',NULL,'perf-team',0);
+INSERT INTO view (id,name,test_id) VALUES (3,'default',3);
+UPDATE test SET defaultview_id = 3 WHERE id = 3;
+
 INSERT INTO schema (id, access, description, name, owner, schema, uri) VALUES (3, 0, 'Hyperfoil''s all.json', 'Hyperfoil v2.0', 'dev-team', '{"$id": "http://hyperfoil.io/run-schema/v2.0", "type": "object", "$schema": "http://json-schema.org/draft-07/schema#" }', 'http://hyperfoil.io/run-schema/v2.0');
 INSERT INTO schemaextractor (id,accessor,jsonpath,schema_id) VALUES (11,'runId', '.info.id',3);
 INSERT INTO schemaextractor (id,accessor,jsonpath,schema_id) VALUES (12,'requestCount', '.stats[*].total.summary.requestCount',3);

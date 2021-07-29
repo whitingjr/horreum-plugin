@@ -10,7 +10,7 @@ fi
 
 
 while ! curl -s --fail $KEYCLOAK_HOST:8180; do
-  sleep 5;
+  sleep 1;
 done
 KEYCLOAK_ADMIN_TOKEN=$(curl -s $KEYCLOAK_HOST:8180/auth/realms/master/protocol/openid-connect/token -X POST -H 'content-type: application/x-www-form-urlencoded' -d 'username=admin&password=secret&grant_type=password&client_id=admin-cli' | jq -r .access_token)
 [ -n "$KEYCLOAK_ADMIN_TOKEN" -a "$KEYCLOAK_ADMIN_TOKEN" != "null" ] || exit 1

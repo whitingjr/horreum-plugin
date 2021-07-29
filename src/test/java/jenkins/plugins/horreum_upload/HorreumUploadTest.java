@@ -1,27 +1,25 @@
 package jenkins.plugins.horreum_upload;
 
+import java.net.URL;
+
 import org.junit.Test;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 
-public class HorreumUploadTest extends HorreumPlpuginTestBase{
+public class HorreumUploadTest extends HorreumPluginTestBase {
 	@Test
 	public void simpleGetTest() throws Exception {
 
-		// Prepare the server
-//		registerRequestChecker(HttpMode.GET);
+		URL jsonResource = Thread.currentThread().getContextClassLoader().getResource("data/config-quickstart.jvm.json");
 
 		// Prepare HttpRequest#
 		HorreumUpload horreumUpload = new HorreumUpload("Dummy", "dev-team",
 				"PUBLIC", "$.build-timestamp",
-				"$.build-timestamp", null, "/working/projects/redHat/Hyperfoil/qdup-jenkins-plugin/src/test/resources/script/json/config-quickstart.jvm.json");
+				"$.build-timestamp", null, jsonResource.getPath());
 
 		horreumUpload.setQuiet(false);
 		horreumUpload.setConsoleLogResponseBody(true);
-
-//		HttpRequest httpRequest = new HttpRequest(baseURL() + "/doGET");
-//		httpRequest.setConsoleLogResponseBody(true);
 
 		// Run build
 		FreeStyleProject project = this.j.createFreeStyleProject("Horreum-Upload-Freestyle");
@@ -32,4 +30,5 @@ public class HorreumUploadTest extends HorreumPlpuginTestBase{
 		this.j.assertBuildStatusSuccess(build);
 		this.j.assertLogContains(ALL_IS_WELL, build);
 	}
+
 }
