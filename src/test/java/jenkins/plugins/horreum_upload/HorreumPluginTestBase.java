@@ -1,21 +1,21 @@
 package jenkins.plugins.horreum_upload;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.entity.ContentType;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
@@ -39,26 +39,51 @@ import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.SystemCredentialsProvider;
 import com.cloudbees.plugins.credentials.domains.Domain;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
-import com.google.common.io.CharStreams;
 
 import hudson.util.Secret;
 
 public class HorreumPluginTestBase {
+
+	static Properties configProperties;
 	private static final String HORREUM_KEYCLOAK_REALM = "horreum";
-	private static final String HORREUM_KEYCLOAK_BASE_URL = "http://172.17.0.1:8180";
-	private static final String HORREUM_BASE_URL = "http://localhost:8082/api/run/data";
-	private static final String HORREUM_CLIENT_ID = "horreum-ui";
+	private static final String HORREUM_KEYCLOAK_BASE_URL;
+	private static final String HORREUM_BASE_URL;
+	private static final String HORREUM_BASE_PATH;
+	private static final String HORREUM_CLIENT_ID;
 
 	public static final String HORREUM_UPLOAD_CREDENTIALS = "horreum-creds";
 	private static final String HORREUM_CLIENT_SECRET = "horreum-secret";
 
+	private static boolean START_HORREUM_INFRA;
+	private static boolean HORREUM_DUMP_LOGS;
+
+	static {
+		configProperties = new Properties();
+		InputStream propertyStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("testcontainers/env.properties"); //TODO: make configurable
+		try {
+			if (propertyStream != null) {
+				configProperties.load(propertyStream);
+
+				HORREUM_KEYCLOAK_BASE_URL = configProperties.getProperty("horreum.keycloak.base-url");
+				HORREUM_BASE_URL = configProperties.getProperty("horreum.base-url");
+				HORREUM_BASE_PATH = configProperties.getProperty("horreum.base-path");
+				HORREUM_CLIENT_ID = configProperties.getProperty("horreum.client-id");
+
+				START_HORREUM_INFRA = Boolean.valueOf(configProperties.getProperty("horreum.start-infra"));
+				HORREUM_DUMP_LOGS = Boolean.valueOf(configProperties.getProperty("horreum.dump-logs"));
+			} else {
+				throw new RuntimeException("Could not load test configuration");
+			}
+		} catch (IOException ioException) {
+			throw new RuntimeException("Failed to load configuration properties");
+		}
+	}
+
 	//	@ClassRule  //Inject Docker compose container env
 	public static DockerComposeContainer environment = null;
 
-	private static ServerRunning SERVER;
+	private static JenkinsServer SERVER;
 	static final String ALL_IS_WELL = "All is well";
-	private static boolean spinUpHorreumInfra = true;
-	private static boolean dumpHorreumLogs = true;
 
 
 	@Rule
@@ -84,22 +109,15 @@ public class HorreumPluginTestBase {
 	}
 
 
-	static void registerHandler(String target, HttpMode method, SimpleHandler handler) {
-		Map<HttpMode, Handler> handlerByMethod = SERVER.handlersByMethodByTarget.get(target);
-		if (handlerByMethod == null) {
-			SERVER.handlersByMethodByTarget.put(target, handlerByMethod = new HashMap<>());
-		}
-		handlerByMethod.put(method, handler);
-	}
 
 	@BeforeClass
 	public static void beforeClass() throws Exception {
 		if (SERVER != null) {
 			return;
 		}
-		SERVER = new ServerRunning();
+		SERVER = new JenkinsServer();
 
-		if (spinUpHorreumInfra) {
+		if (START_HORREUM_INFRA) {
 
 			environment = new DockerComposeContainer(new File("src/test/resources/testcontainers/docker-compose.yml"))
 					.withExposedService("postgres_1", 5432)
@@ -125,9 +143,9 @@ public class HorreumPluginTestBase {
 			SERVER.server.stop();
 			SERVER = null;
 		}
-		if ( dumpHorreumLogs ){
-			Optional<ContainerState> containerState =  environment.getContainerByServiceName("horreum_1"); //TODO: dynamic resolve
-			if (containerState.isPresent()){
+		if (HORREUM_DUMP_LOGS) {
+			Optional<ContainerState> containerState = environment.getContainerByServiceName("horreum_1"); //TODO: dynamic resolve
+			if (containerState.isPresent()) {
 				String logs = containerState.get().getLogs(OutputType.STDOUT);
 				File tmpFile = File.createTempFile("horreum-jenkins", ".log");
 				BufferedWriter writer = new BufferedWriter(new FileWriter(tmpFile));
@@ -137,7 +155,7 @@ public class HorreumPluginTestBase {
 			}
 
 		}
-		if (environment != null){
+		if (environment != null) {
 			environment.stop();
 			environment = null;
 		}
@@ -150,14 +168,12 @@ public class HorreumPluginTestBase {
 		this.registerBasicCredential(HORREUM_UPLOAD_CREDENTIALS, "user", "secret");
 		this.registerSecret(HORREUM_CLIENT_SECRET, "96af3ebe-bf3c-4c70-8ca9-ee952ab42fec");
 
-		//TODO register Horreum global config
-		HorreumUploadGlobalConfig globalConfig = HorreumUploadGlobalConfig.get(); //  j.jenkins.getDescriptorList(GlobalConfiguration.class).get(HorreumUploadGlobalConfig.class);
+		HorreumUploadGlobalConfig globalConfig = HorreumUploadGlobalConfig.get();
 		if (globalConfig != null) {
-			globalConfig.setBaseUrl("http://127.0.0.1:8082");
 			globalConfig.setKeycloakRealm(HORREUM_KEYCLOAK_REALM);
 			globalConfig.setClientId(HORREUM_CLIENT_ID);
 			globalConfig.setKeycloakBaseUrl(HORREUM_KEYCLOAK_BASE_URL);
-			globalConfig.setBaseUrl(HORREUM_BASE_URL);
+			globalConfig.setBaseUrl(HORREUM_BASE_URL + HORREUM_BASE_PATH);
 
 			globalConfig.setCredentialsId(HORREUM_UPLOAD_CREDENTIALS);
 			globalConfig.setClientSecretId(HORREUM_CLIENT_SECRET);
@@ -174,43 +190,13 @@ public class HorreumPluginTestBase {
 		}
 	}
 
-	public static abstract class SimpleHandler extends DefaultHandler {
-		@Override
-		public final void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-			doHandle(target, baseRequest, request, response);
-			baseRequest.setHandled(true);
-		}
-
-		String requestBody(HttpServletRequest request) throws IOException {
-			try (BufferedReader reader = request.getReader()) {
-				return CharStreams.toString(reader);
-			}
-		}
-
-		void okAllIsWell(HttpServletResponse response) throws IOException {
-			okText(response, ALL_IS_WELL);
-		}
-
-		void okText(HttpServletResponse response, String body) throws IOException {
-			body(response, HttpServletResponse.SC_OK, ContentType.TEXT_PLAIN, body);
-		}
-
-		void body(HttpServletResponse response, int status, ContentType contentType, String body) throws IOException {
-			response.setContentType(contentType != null ? contentType.toString() : "");
-			response.setStatus(status);
-			response.getWriter().append(body);
-		}
-
-		abstract void doHandle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException;
-	}
-
-	private static final class ServerRunning {
+	private static final class JenkinsServer {
 		private final Server server;
 		private final int port;
 		private final String baseURL;
 		private final Map<String, Map<HttpMode, Handler>> handlersByMethodByTarget = new HashMap<>();
 
-		private ServerRunning() throws Exception {
+		private JenkinsServer() throws Exception {
 			server = new Server();
 			ServerConnector connector = new ServerConnector(server);
 			server.setConnectors(new Connector[]{connector});
@@ -239,13 +225,4 @@ public class HorreumPluginTestBase {
 			baseURL = "http://127.0.0.1:" + port;
 		}
 	}
-
-//	void createNewTest(String dummy) {
-//		HorreumUploadConfig config = new HorreumUploadConfig();
-//
-//		HorreumUploadExecutionContext.from(config, null, () -> null, () -> null);
-//
-//
-//	}
-
 }

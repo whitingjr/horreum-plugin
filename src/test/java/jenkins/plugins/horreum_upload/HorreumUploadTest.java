@@ -14,9 +14,15 @@ public class HorreumUploadTest extends HorreumPluginTestBase {
 		URL jsonResource = Thread.currentThread().getContextClassLoader().getResource("data/config-quickstart.jvm.json");
 
 		// Prepare HttpRequest#
-		HorreumUpload horreumUpload = new HorreumUpload("Dummy", "dev-team",
-				"PUBLIC", "$.build-timestamp",
-				"$.build-timestamp", null, jsonResource.getPath());
+		HorreumUpload horreumUpload = new HorreumUpload(
+				configProperties.getProperty("horreum.test.name"),
+				configProperties.getProperty("horreum.test.owner"),
+				configProperties.getProperty("horreum.test.access"),
+				configProperties.getProperty("horreum.test.start-accessor"),
+				configProperties.getProperty("horreum.test.stop-accessor"),
+				configProperties.getProperty("horreum.test.schema"),
+				jsonResource.getPath()
+		);
 
 		horreumUpload.setQuiet(false);
 		horreumUpload.setConsoleLogResponseBody(true);
