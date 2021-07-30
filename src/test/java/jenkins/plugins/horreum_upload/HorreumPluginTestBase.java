@@ -1,5 +1,8 @@
 package jenkins.plugins.horreum_upload;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -15,6 +18,7 @@ import java.util.Properties;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.UriBuilder;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
@@ -23,6 +27,10 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import org.jboss.resteasy.client.jaxrs.internal.ClientResponse;
+import org.jboss.resteasy.microprofile.client.impl.MpClientBuilderImpl;
 import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -41,21 +49,30 @@ import com.cloudbees.plugins.credentials.domains.Domain;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 
 import hudson.util.Secret;
+import jenkins.plugins.horreum_upload.api.HorreumTestService;
+import jenkins.plugins.horreum_upload.api.dto.HorreumTest;
+import jenkins.plugins.horreum_upload.auth.KeycloakAuthentication;
+import jenkins.plugins.horreum_upload.auth.KeycloakClientRequestFilter;
 
 public class HorreumPluginTestBase {
 
 	static Properties configProperties;
-	private static final String HORREUM_KEYCLOAK_REALM = "horreum";
-	private static final String HORREUM_KEYCLOAK_BASE_URL;
+	public static final String HORREUM_KEYCLOAK_REALM;
+	public static final String HORREUM_KEYCLOAK_BASE_URL;
 	private static final String HORREUM_BASE_URL;
 	private static final String HORREUM_BASE_PATH;
-	private static final String HORREUM_CLIENT_ID;
+	public static final String HORREUM_CLIENT_ID;
 
 	public static final String HORREUM_UPLOAD_CREDENTIALS = "horreum-creds";
 	private static final String HORREUM_CLIENT_SECRET = "horreum-secret";
 
-	private static boolean START_HORREUM_INFRA;
-	private static boolean HORREUM_DUMP_LOGS;
+	protected static boolean BOOTSTRAP_JENKINS = true;
+	protected static boolean START_HORREUM_INFRA;
+	protected static boolean CREATE_HORREUM_TEST;
+	protected static boolean HORREUM_DUMP_LOGS;
+
+	protected static HorreumTestService horreumTestProxy;
+
 
 	static {
 		configProperties = new Properties();
@@ -68,9 +85,11 @@ public class HorreumPluginTestBase {
 				HORREUM_BASE_URL = configProperties.getProperty("horreum.base-url");
 				HORREUM_BASE_PATH = configProperties.getProperty("horreum.base-path");
 				HORREUM_CLIENT_ID = configProperties.getProperty("horreum.client-id");
+				HORREUM_KEYCLOAK_REALM = configProperties.getProperty("keycloak.realm");
 
 				START_HORREUM_INFRA = Boolean.valueOf(configProperties.getProperty("horreum.start-infra"));
 				HORREUM_DUMP_LOGS = Boolean.valueOf(configProperties.getProperty("horreum.dump-logs"));
+				CREATE_HORREUM_TEST = Boolean.valueOf(configProperties.getProperty("horreum.create-test"));
 			} else {
 				throw new RuntimeException("Could not load test configuration");
 			}
@@ -109,13 +128,9 @@ public class HorreumPluginTestBase {
 	}
 
 
-
 	@BeforeClass
 	public static void beforeClass() throws Exception {
-		if (SERVER != null) {
-			return;
-		}
-		SERVER = new JenkinsServer();
+		initialiseRestClients();
 
 		if (START_HORREUM_INFRA) {
 
@@ -135,6 +150,43 @@ public class HorreumPluginTestBase {
 				System.out.println("Could not find running Horreum container");
 			}
 		}
+
+		if (BOOTSTRAP_JENKINS) {
+			if (SERVER != null) {
+				return;
+			}
+			SERVER = new JenkinsServer();
+		}
+
+	}
+
+	private static void createNewTest() {
+
+		HorreumTest newTest = new HorreumTest();
+		newTest.setName(configProperties.getProperty("horreum.test.name"));
+		newTest.setOwner(configProperties.getProperty("horreum.test.owner"));
+
+		KeycloakAuthentication keycloakAuthentication = HorreumUploadGlobalConfig.getKeycloakAuthentication();
+
+		keycloakAuthentication.setHorreumClientSecretID(configProperties.getProperty("horreum.test.name"));
+
+		ClientResponse response = horreumTestProxy.add(newTest);
+		assertNotNull(response);
+
+		assertEquals(200, response.getStatus());
+	}
+
+	private static void initialiseRestClients() {
+
+		MpClientBuilderImpl clientBuilder = new MpClientBuilderImpl();
+
+		clientBuilder.register(KeycloakClientRequestFilter.class);
+
+		ResteasyClient client = clientBuilder.build();
+		ResteasyWebTarget target = client.target(UriBuilder.fromPath(HORREUM_BASE_URL + "/"));
+
+		horreumTestProxy = target.proxyBuilder(HorreumTestService.class).build();
+
 	}
 
 	@AfterClass
@@ -173,7 +225,7 @@ public class HorreumPluginTestBase {
 			globalConfig.setKeycloakRealm(HORREUM_KEYCLOAK_REALM);
 			globalConfig.setClientId(HORREUM_CLIENT_ID);
 			globalConfig.setKeycloakBaseUrl(HORREUM_KEYCLOAK_BASE_URL);
-			globalConfig.setBaseUrl(HORREUM_BASE_URL + HORREUM_BASE_PATH);
+			globalConfig.setBaseUrl(HORREUM_BASE_URL);
 
 			globalConfig.setCredentialsId(HORREUM_UPLOAD_CREDENTIALS);
 			globalConfig.setClientSecretId(HORREUM_CLIENT_SECRET);
@@ -181,6 +233,12 @@ public class HorreumPluginTestBase {
 			System.out.println("Can not find Horreum Global Config");
 		}
 
+		//Lookup Credentials from secrets
+		HorreumUploadGlobalConfig.getKeycloakAuthentication().resolveCredentials();
+
+		if(CREATE_HORREUM_TEST){
+			createNewTest();
+		}
 	}
 
 	@After

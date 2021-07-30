@@ -27,18 +27,13 @@ public class HorreumUploadConfig {
 	private @Nonnull String schema;
 	private @Nonnull String jsonFile;
 
-	private boolean ignoreSslErrors = HorreumUploadStep.DescriptorImpl.ignoreSslErrors;
 	private boolean abortOnFailure = HorreumUploadStep.DescriptorImpl.abortOnFailure;
 	private String validResponseCodes         = HorreumUploadStep.DescriptorImpl.validResponseCodes;
 	private String validResponseContent       = HorreumUploadStep.DescriptorImpl.validResponseContent;
-	private MimeType contentType              = HorreumUploadStep.DescriptorImpl.contentType;
-	private Integer timeout                   = HorreumUploadStep.DescriptorImpl.timeout;
 	private Boolean consoleLogResponseBody    = HorreumUploadStep.DescriptorImpl.consoleLogResponseBody;
 	private Boolean quiet                     = HorreumUploadStep.DescriptorImpl.quiet;
 	private String authentication             = HorreumUploadStep.DescriptorImpl.authentication;
-	private String requestBody                = HorreumUploadStep.DescriptorImpl.requestBody;
 	private List<HttpRequestNameValuePair> customHeaders = HorreumUploadStep.DescriptorImpl.customHeaders;
-	private ResponseHandle responseHandle = HorreumUploadStep.DescriptorImpl.responseHandle;
 
 	private String keycloakRealm;
 	private String clientId;
@@ -118,14 +113,6 @@ public class HorreumUploadConfig {
 		this.jsonFile = jsonFile;
 	}
 
-	public boolean getIgnoreSslErrors() {
-		return ignoreSslErrors;
-	}
-
-	public void setIgnoreSslErrors(boolean ignoreSslErrors) {
-		this.ignoreSslErrors = ignoreSslErrors;
-	}
-
 	public boolean getAbortOnFailure() {
 		return abortOnFailure;
 	}
@@ -148,22 +135,6 @@ public class HorreumUploadConfig {
 
 	public void setValidResponseContent(String validResponseContent) {
 		this.validResponseContent = validResponseContent;
-	}
-
-	public MimeType getContentType() {
-		return contentType;
-	}
-
-	public void setContentType(MimeType contentType) {
-		this.contentType = contentType;
-	}
-
-	public Integer getTimeout() {
-		return timeout;
-	}
-
-	public void setTimeout(Integer timeout) {
-		this.timeout = timeout;
 	}
 
 	public Boolean getConsoleLogResponseBody() {
@@ -190,28 +161,12 @@ public class HorreumUploadConfig {
 		this.authentication = authentication;
 	}
 
-	public String getRequestBody() {
-		return requestBody;
-	}
-
-	public void setRequestBody(String requestBody) {
-		this.requestBody = requestBody;
-	}
-
 	public List<HttpRequestNameValuePair> getCustomHeaders() {
 		return customHeaders;
 	}
 
 	public void setCustomHeaders(List<HttpRequestNameValuePair> customHeaders) {
 		this.customHeaders = customHeaders;
-	}
-
-	public ResponseHandle getResponseHandle() {
-		return responseHandle;
-	}
-
-	public void setResponseHandle(ResponseHandle responseHandle) {
-		this.responseHandle = responseHandle;
 	}
 
 
@@ -248,39 +203,6 @@ public class HorreumUploadConfig {
 		HorreumCredentialsID = horreumCredentialsID;
 	}
 
-	List<HttpRequestNameValuePair> createParams(EnvVars envVars, AbstractBuild<?, ?> build, TaskListener listener) throws IOException {
-		Map<String, String> buildVariables = build.getBuildVariables();
-		if (buildVariables.isEmpty()) {
-			return Collections.emptyList();
-		}
-		PrintStream logger = listener.getLogger();
-		logger.println("Parameters: ");
-
-		List<HttpRequestNameValuePair> l = new ArrayList<>();
-		for (Map.Entry<String, String> entry : buildVariables.entrySet()) {
-			String value = envVars.expand(entry.getValue());
-			logger.println("  " + entry.getKey() + " = " + value);
-
-			l.add(new HttpRequestNameValuePair(entry.getKey(), value));
-		}
-		return l;
-	}
-
-	List<HttpRequestNameValuePair> resolveHeaders(EnvVars envVars) {
-		final List<HttpRequestNameValuePair> headers = new ArrayList<>();
-		if (contentType != null && contentType != MimeType.NOT_SET) {
-			headers.add(new HttpRequestNameValuePair(HttpHeaders.CONTENT_TYPE, contentType.getContentType().toString()));
-		}
-		for (HttpRequestNameValuePair header : customHeaders) {
-			String headerName = envVars != null ? envVars.expand(header.getName()) : header.getName();
-			String headerValue = envVars != null ?  envVars.expand(header.getValue()) : header.getValue();
-			boolean maskValue = headerName.equalsIgnoreCase(HttpHeaders.AUTHORIZATION) ||
-					header.getMaskValue();
-
-			headers.add(new HttpRequestNameValuePair(headerName, headerValue, maskValue));
-		}
-		return headers;
-	}
 
 	FilePath resolveUploadFile(EnvVars envVars, AbstractBuild<?,?> build) {
 		if (jsonFile == null || jsonFile.trim().isEmpty()) {

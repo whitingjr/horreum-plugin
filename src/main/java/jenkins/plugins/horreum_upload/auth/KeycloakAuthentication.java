@@ -1,23 +1,8 @@
 package jenkins.plugins.horreum_upload.auth;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.protocol.HttpContext;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
-import org.kohsuke.stapler.QueryParameter;
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
@@ -28,20 +13,12 @@ import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.security.ACL;
-import hudson.util.FormValidation;
-import io.hyperfoil.tools.yaup.json.Json;
 import jenkins.model.Jenkins;
-import jenkins.plugins.horreum_upload.HorreumUploadGlobalConfig;
-import jenkins.plugins.horreum_upload.MimeType;
-import jenkins.plugins.horreum_upload.util.HttpClientUtil;
-import jenkins.plugins.horreum_upload.util.HttpRequestNameValuePair;
-import jenkins.plugins.horreum_upload.util.RequestAction;
 
 /**
  * @author John O'Hara
  */
-public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuthentication>
-		implements Authenticator {
+public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuthentication> {
 
 	private static final long serialVersionUID = -4370238820425771639L;
 	private static final String keyName = "keycloak";
@@ -101,88 +78,16 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 		HorreumCredentialsID = horreumCredentialsID;
 	}
 
-	@Override
-	public CloseableHttpClient authenticate(HttpClientBuilder clientBuilder, HttpContext context,
-											HttpRequestBase requestBase, PrintStream logger) throws IOException, InterruptedException {
+	public String getClient_secret() {
+		return client_secret;
+	}
 
-		validateConfiguration();
+	public String getUsername() {
+		return username;
+	}
 
-
-		StringBuilder urlBuilder = new StringBuilder();
-		urlBuilder
-				.append(this.keycloakBaseUrl)
-				.append("/auth/realms/")
-				.append(this.keycloakRealm)
-				.append("/protocol/openid-connect/token")
-		;
-
-		final CloseableHttpClient client = clientBuilder.build();
-		final HttpClientUtil clientUtil = new HttpClientUtil();
-
-		if (username != null && password != null) {
-			final List<HttpRequestNameValuePair> params = new ArrayList<>();
-			params.add(new HttpRequestNameValuePair("client_id", this.clientId));
-			params.add(new HttpRequestNameValuePair("grant_type", "password"));
-			params.add(new HttpRequestNameValuePair("scope", "openid"));
-
-			//Add Secrets
-			if ( client_secret != null ) {
-				params.add(new HttpRequestNameValuePair("client_secret", this.client_secret, true));
-			}
-			params.add(new HttpRequestNameValuePair("username", this.username, true));
-			params.add(new HttpRequestNameValuePair("password", this.password, true));
-
-			final List<HttpRequestNameValuePair> headers = new ArrayList<>();
-			headers.add(new HttpRequestNameValuePair("content_type", ContentType.APPLICATION_FORM_URLENCODED.toString()));
-
-			URL authUrl = new URL(urlBuilder.toString());
-
-			RequestAction requestAction = new RequestAction(authUrl, params, headers);
-
-			try {
-				final HttpResponse authResponse = clientUtil.execute(
-						client,
-						context,
-						clientUtil.createRequestBase(requestAction),
-						logger
-				);
-
-				//from 400(client error) to 599(server error)
-				if ((authResponse.getStatusLine().getStatusCode() >= 400
-						&& authResponse.getStatusLine().getStatusCode() <= 599)) {
-					throw new IllegalStateException("Error doing authentication");
-
-				} else {
-					if (!authResponse.getEntity().getContentType().getValue().equals(MimeType.APPLICATION_JSON.getValue())) {
-						throw new IllegalStateException("Auth request did not return json object");
-					}
-					String jsonvalue;
-					try {
-						InputStreamReader streamReader = new InputStreamReader(authResponse.getEntity().getContent(), StandardCharsets.UTF_8);
-						BufferedReader bufferedReader = new BufferedReader(streamReader);
-						jsonvalue = bufferedReader
-								.lines()
-								.collect(Collectors.joining("\n"));
-						bufferedReader.close();
-						streamReader.close();
-					} catch (IOException ioe) {
-						throw new IllegalStateException("Error reading authentication response");
-					}
-
-					Json json = Json.fromString(jsonvalue);
-
-					context.setAttribute("http.auth.access_token", json.getString("access_token"));
-
-				}
-			} catch (IOException ioException) {
-				throw new IllegalStateException("Error sending request to: " + authUrl);
-			}
-		} else {
-			throw new IllegalStateException("Credentials have not be resolved. Please resolve credentials before running authentication");
-		}
-
-
-		return client;
+	public String getPassword() {
+		return password;
 	}
 
 	private void validateConfiguration() throws IllegalStateException {
@@ -200,7 +105,6 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 		}
 	}
 
-	@Override
 	public void resolveCredentials() {
 		//Retrieve Credentials
 		//TODO:: pass in DomainRequirement
@@ -236,9 +140,9 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 	@Extension
 	public static class OAuthAuthenticationDescriptor extends Descriptor<KeycloakAuthentication> {
 
-		public FormValidation doCheckKeyName(@QueryParameter String value) {
-			return HorreumUploadGlobalConfig.validateKeyName(value);
-		}
+//		public FormValidation doCheckKeyName(@QueryParameter String value) {
+//			return HorreumUploadGlobalConfig.validateKeyName(value);
+//		}
 
 		@Override
 		public String getDisplayName() {

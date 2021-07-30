@@ -47,10 +47,6 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 
 	}
 
-	public boolean isIgnoreSslErrors() {
-		return config.getIgnoreSslErrors();
-	}
-
 	public boolean getAbortOnFailure() {
 		return config.getAbortOnFailure();
 	}
@@ -58,11 +54,6 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 	@DataBoundSetter
 	public void setAbortOnFailure(boolean abortOnFailure) {
 		this.config.setAbortOnFailure(abortOnFailure);
-	}
-
-	@DataBoundSetter
-	public void setIgnoreSslErrors(boolean ignoreSslErrors) {
-		this.config.setIgnoreSslErrors(ignoreSslErrors);
 	}
 
 	@DataBoundSetter
@@ -81,24 +72,6 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 
 	public String getValidResponseContent() {
 		return config.getValidResponseContent();
-	}
-
-	@DataBoundSetter
-	public void setContentType(MimeType contentType) {
-		this.config.setContentType(contentType);
-	}
-
-	public MimeType getContentType() {
-		return config.getContentType();
-	}
-
-	@DataBoundSetter
-	public void setTimeout(Integer timeout) {
-		this.config.setTimeout(timeout);
-	}
-
-	public Integer getTimeout() {
-		return config.getTimeout();
 	}
 
 	@DataBoundSetter
@@ -191,16 +164,6 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 		return config.getCustomHeaders();
 	}
 
-	public ResponseHandle getResponseHandle() {
-		return config.getResponseHandle();
-	}
-
-
-	@DataBoundSetter
-	public void setResponseHandle(ResponseHandle responseHandle) {
-		this.config.setResponseHandle(responseHandle);
-	}
-
 	public String getJsonFile() {
 		return config.getJsonFile();
 	}
@@ -219,19 +182,14 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 
 	@Extension
 	public static final class DescriptorImpl extends AbstractStepDescriptorImpl {
-		public static final boolean ignoreSslErrors = HorreumUpload.DescriptorImpl.ignoreSslErrors;
 		public static final boolean abortOnFailure = HorreumUpload.DescriptorImpl.abortOnFailure;
 		public static final String validResponseCodes = HorreumUpload.DescriptorImpl.validResponseCodes;
 		public static final String validResponseContent = HorreumUpload.DescriptorImpl.validResponseContent;
-		public static final MimeType contentType = HorreumUpload.DescriptorImpl.contentType;
-		public static final int timeout = HorreumUpload.DescriptorImpl.timeout;
 		public static final Boolean consoleLogResponseBody = HorreumUpload.DescriptorImpl.consoleLogResponseBody;
 		public static final Boolean quiet = HorreumUpload.DescriptorImpl.quiet;
 		public static final String authentication = HorreumUpload.DescriptorImpl.authentication;
-		public static final String requestBody = HorreumUpload.DescriptorImpl.requestBody;
 		public static final String jsonFile = HorreumUpload.DescriptorImpl.jsonFile;
 		public static final List<HttpRequestNameValuePair> customHeaders = Collections.emptyList();
-		public static final ResponseHandle responseHandle = ResponseHandle.STRING;
 
 		public DescriptorImpl() {
 			super(Execution.class);
@@ -245,26 +203,6 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 		@Override
 		public String getDisplayName() {
 			return "Uplaod a JSON object to a Horreum instance";
-		}
-
-		public ListBoxModel doFillHttpModeItems() {
-			return HttpMode.getFillItems();
-		}
-
-		public ListBoxModel doFillAcceptTypeItems() {
-			return MimeType.getContentTypeFillItems();
-		}
-
-		public ListBoxModel doFillContentTypeItems() {
-			return MimeType.getContentTypeFillItems();
-		}
-
-		public ListBoxModel doFillResponseHandleItems() {
-			ListBoxModel items = new ListBoxModel();
-			for (ResponseHandle responseHandle : ResponseHandle.values()) {
-				items.add(responseHandle.name());
-			}
-			return items;
 		}
 
 		public ListBoxModel doFillAuthenticationItems(@AncestorInPath Item project,

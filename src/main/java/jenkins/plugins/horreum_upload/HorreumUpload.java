@@ -27,7 +27,6 @@ import com.google.common.collect.Ranges;
 
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.FilePath;
 import hudson.Launcher;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
@@ -44,12 +43,7 @@ import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import hudson.util.ListBoxModel.Option;
-import jenkins.plugins.horreum_upload.auth.Authenticator;
 import jenkins.plugins.horreum_upload.util.HttpRequestNameValuePair;
-
-/**
- * @author Janario Oliveira
- */
 
 //TODO: Make safe functionality as upload step
 public class HorreumUpload extends Builder {
@@ -63,10 +57,6 @@ public class HorreumUpload extends Builder {
 		this.config = new HorreumUploadConfig(test, owner, access, startAccessor, stopAccessor, schema, jsonFile);
 	}
 
-	public boolean isIgnoreSslErrors() {
-		return config.getIgnoreSslErrors();
-	}
-
 	public boolean getAbortOnFailure() {
 		return config.getAbortOnFailure();
 	}
@@ -74,11 +64,6 @@ public class HorreumUpload extends Builder {
 	@DataBoundSetter
 	public void setAbortOnFailure(boolean abortOnFailure) {
 		this.config.setAbortOnFailure(abortOnFailure);
-	}
-
-	@DataBoundSetter
-	public void setIgnoreSslErrors(boolean ignoreSslErrors) {
-		this.config.setIgnoreSslErrors(ignoreSslErrors);
 	}
 
 	@DataBoundSetter
@@ -97,24 +82,6 @@ public class HorreumUpload extends Builder {
 
 	public String getValidResponseContent() {
 		return config.getValidResponseContent();
-	}
-
-	@DataBoundSetter
-	public void setContentType(MimeType contentType) {
-		this.config.setContentType(contentType);
-	}
-
-	public MimeType getContentType() {
-		return config.getContentType();
-	}
-
-	@DataBoundSetter
-	public void setTimeout(Integer timeout) {
-		this.config.setTimeout(timeout);
-	}
-
-	public Integer getTimeout() {
-		return config.getTimeout();
 	}
 
 	@DataBoundSetter
@@ -207,16 +174,6 @@ public class HorreumUpload extends Builder {
 		return config.getCustomHeaders();
 	}
 
-	public ResponseHandle getResponseHandle() {
-		return config.getResponseHandle();
-	}
-
-
-	@DataBoundSetter
-	public void setResponseHandle(ResponseHandle responseHandle) {
-		this.config.setResponseHandle(responseHandle);
-	}
-
 	public String getJsonFile() {
 		return config.getJsonFile();
 	}
@@ -225,12 +182,6 @@ public class HorreumUpload extends Builder {
 	public void setJsonFile(String jsonFile) {
 		this.config.setJsonFile(jsonFile);
 	}
-
-
-//	@Override
-//	public HorreumUploadStep.DescriptorImpl getDescriptor() {
-//		return (HorreumUploadStep.DescriptorImpl) super.getDescriptor();
-//	}
 
 	@Initializer(before = InitMilestone.PLUGINS_STARTED)
 	public static void xStreamCompatibility() {
@@ -242,13 +193,6 @@ public class HorreumUpload extends Builder {
 	protected Object readResolve() {
 		if (config.getCustomHeaders() == null) {
 			config.setCustomHeaders(DescriptorImpl.customHeaders);
-		}
-//		if (ignoreSslErrors == null) {
-//			//default for new job false(DescriptorImpl.ignoreSslErrors) for old ones true to keep same behavior
-//			ignoreSslErrors = true;
-//		}
-		if (config.getQuiet() == null) {
-			config.setQuiet(DescriptorImpl.quiet);
 		}
 		return this;
 	}
@@ -275,27 +219,15 @@ public class HorreumUpload extends Builder {
 		return true;
 	}
 
-	public List<HttpRequestNameValuePair> resolveHeaders(EnvVars envVars) {
-		return config.resolveHeaders(envVars);
-	}
-
-	public FilePath resolveUploadFile(EnvVars envVars, AbstractBuild<?, ?> build) {
-		return config.resolveUploadFile(envVars, build);
-	}
-
 	@Extension
 	public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
-		public static final boolean ignoreSslErrors = true;
 		public static final boolean abortOnFailure = true;
 		public static final Boolean passBuildParameters = false;
 		public static final String validResponseCodes = "100:399";
 		public static final String validResponseContent = "";
-		public static final MimeType contentType = MimeType.APPLICATION_JSON;
-		public static final int timeout = 0;
 		public static final Boolean consoleLogResponseBody = false;
 		public static final Boolean quiet = false;
 		public static final String authentication = "keycloak";
-		public static final String requestBody = "";
 		public static final String jsonFile = "";
 		public static final List<HttpRequestNameValuePair> customHeaders = Collections.emptyList();
 
@@ -314,34 +246,9 @@ public class HorreumUpload extends Builder {
 			return "Horreum Upload";
 		}
 
-		public ListBoxModel doFillHttpModeItems() {
-			return HttpMode.getFillItems();
-		}
-
-		public ListBoxModel doFillAcceptTypeItems() {
-			return MimeType.getContentTypeFillItems();
-		}
-
-		public ListBoxModel doFillContentTypeItems() {
-			return MimeType.getContentTypeFillItems();
-		}
-
 		public ListBoxModel doFillAuthenticationItems(@AncestorInPath Item project,
 													  @QueryParameter String url) {
 			return fillAuthenticationItems(project, url);
-		}
-
-		public ListBoxModel doFillProxyAuthenticationItems(@AncestorInPath Item project,
-														   @QueryParameter String url) {
-			if (project == null || !project.hasPermission(Item.CONFIGURE)) {
-				return new StandardListBoxModel();
-			} else {
-				return new StandardListBoxModel()
-						.includeEmptyValue()
-						.includeAs(ACL.SYSTEM,
-								project, StandardUsernamePasswordCredentials.class,
-								URIRequirementBuilder.fromUri(url).build());
-			}
 		}
 
 		public static ListBoxModel fillAuthenticationItems(Item project, String url) {
@@ -351,9 +258,7 @@ public class HorreumUpload extends Builder {
 
 			List<Option> options = new ArrayList<>();
 
-			for (Authenticator authenticator : HorreumUploadGlobalConfig.get().getAuthentications()) {
-				options.add(new Option(authenticator.getKeyName()));
-			}
+			options.add(new Option(HorreumUploadGlobalConfig.get().getAuthentication().getKeyName()));
 
 			AbstractIdCredentialsListBoxModel<StandardListBoxModel, StandardCredentials> items = new StandardListBoxModel()
 					.includeEmptyValue()
