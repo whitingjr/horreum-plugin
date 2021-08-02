@@ -17,16 +17,13 @@ import org.keycloak.representations.AccessTokenResponse;
 
 import jenkins.plugins.horreum_upload.HorreumUploadGlobalConfig;
 
-//import jenkins.plugins.horreum_upload.HorreumPluginTestBase;
-
-//public class OidcClientRequestFilter extends AbstractTokensProducer implements ClientRequestFilter {
 @Provider
 public class KeycloakClientRequestFilter implements ClientRequestFilter {
 
 	private static final Logger LOG = Logger.getLogger(KeycloakClientRequestFilter.class);
 	private static final String BEARER_SCHEME_WITH_SPACE = "Bearer ";
 
-	protected static Keycloak keycloak;
+	Keycloak keycloak;
 
 	String clientName = "horreum";
 
@@ -50,7 +47,7 @@ public class KeycloakClientRequestFilter implements ClientRequestFilter {
 			final String accessToken = getAccessToken();
 			requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, BEARER_SCHEME_WITH_SPACE + accessToken);
 		} catch (Exception ex) {
-			LOG.debugf("Access token is not available, aborting the request with HTTP 401 error: %s", ex.getMessage());
+			LOG.warnf("Access token is not available, aborting the request with HTTP 401 error: %s", ex.getMessage());
 			requestContext.abortWith(Response.status(401).build());
 		}
 	}

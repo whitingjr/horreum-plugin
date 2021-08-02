@@ -81,15 +81,15 @@ public class HorreumPluginTestBase {
 			if (propertyStream != null) {
 				configProperties.load(propertyStream);
 
-				HORREUM_KEYCLOAK_BASE_URL = configProperties.getProperty("horreum.keycloak.base-url");
-				HORREUM_BASE_URL = configProperties.getProperty("horreum.base-url");
-				HORREUM_BASE_PATH = configProperties.getProperty("horreum.base-path");
-				HORREUM_CLIENT_ID = configProperties.getProperty("horreum.client-id");
-				HORREUM_KEYCLOAK_REALM = configProperties.getProperty("keycloak.realm");
+				HORREUM_KEYCLOAK_BASE_URL = getProperty("horreum.keycloak.base-url");
+				HORREUM_BASE_URL = getProperty("horreum.base-url");
+				HORREUM_BASE_PATH = getProperty("horreum.base-path");
+				HORREUM_CLIENT_ID = getProperty("horreum.client-id");
+				HORREUM_KEYCLOAK_REALM = getProperty("keycloak.realm");
 
-				START_HORREUM_INFRA = Boolean.valueOf(configProperties.getProperty("horreum.start-infra"));
-				HORREUM_DUMP_LOGS = Boolean.valueOf(configProperties.getProperty("horreum.dump-logs"));
-				CREATE_HORREUM_TEST = Boolean.valueOf(configProperties.getProperty("horreum.create-test"));
+				START_HORREUM_INFRA = Boolean.valueOf(getProperty("horreum.start-infra"));
+				HORREUM_DUMP_LOGS = Boolean.valueOf(getProperty("horreum.dump-logs"));
+				CREATE_HORREUM_TEST = Boolean.valueOf(getProperty("horreum.create-test"));
 			} else {
 				throw new RuntimeException("Could not load test configuration");
 			}
@@ -111,6 +111,10 @@ public class HorreumPluginTestBase {
 
 	final String baseURL() {
 		return SERVER.baseURL;
+	}
+
+	private static String getProperty(String propertyName){
+		return configProperties.getProperty(propertyName).trim();
 	}
 
 	void registerBasicCredential(String id, String username, String password) {
@@ -195,7 +199,7 @@ public class HorreumPluginTestBase {
 			SERVER.server.stop();
 			SERVER = null;
 		}
-		if (HORREUM_DUMP_LOGS) {
+		if (START_HORREUM_INFRA && HORREUM_DUMP_LOGS) {
 			Optional<ContainerState> containerState = environment.getContainerByServiceName("horreum_1"); //TODO: dynamic resolve
 			if (containerState.isPresent()) {
 				String logs = containerState.get().getLogs(OutputType.STDOUT);

@@ -113,12 +113,6 @@ public class HorreumUploadGlobalConfig extends GlobalConfiguration {
         return KEYCLOAK_AUTHENTICATION;
     }
 
-	@DataBoundSetter
-    public void setOauthAuthentication(
-            KeycloakAuthentication oauthAuthentication) {
-	        KEYCLOAK_AUTHENTICATION = oauthAuthentication;
-    }
-
     public KeycloakAuthentication getAuthentication() {
     	return KEYCLOAK_AUTHENTICATION;
     }

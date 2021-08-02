@@ -1,5 +1,6 @@
 package jenkins.plugins.horreum_upload.auth;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
@@ -15,10 +16,7 @@ import hudson.model.Descriptor;
 import hudson.security.ACL;
 import jenkins.model.Jenkins;
 
-/**
- * @author John O'Hara
- */
-public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuthentication> {
+public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuthentication> implements Serializable {
 
 	private static final long serialVersionUID = -4370238820425771639L;
 	private static final String keyName = "keycloak";

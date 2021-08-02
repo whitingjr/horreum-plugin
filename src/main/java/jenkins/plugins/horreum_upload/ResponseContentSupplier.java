@@ -13,7 +13,6 @@ public class ResponseContentSupplier implements Serializable {
 
 	private int status;
 	private Map<String, List<String>> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private String charset;
 
 	private String content;
 
@@ -30,11 +29,6 @@ public class ResponseContentSupplier implements Serializable {
 	@Whitelisted
 	public Map<String, List<String>> getHeaders() {
 		return this.headers;
-	}
-
-	@Whitelisted
-	public String getCharset() {
-		return charset;
 	}
 
 	@Whitelisted

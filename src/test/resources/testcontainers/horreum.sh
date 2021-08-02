@@ -2,10 +2,10 @@
 
 if [ "$CONTAINER_RUNTIME" = "podman" ]; then
   KEYCLOAK_HOST=127.0.0.1
-  HORREUM_URL=http://127.0.0.1:8080
+  HORREUM_URL=http://127.0.0.1:8082
 else
   KEYCLOAK_HOST=172.17.0.1
-  HORREUM_URL=http://172.17.0.1:8080
+  HORREUM_URL=http://172.17.0.1:8082
 fi
 
 
