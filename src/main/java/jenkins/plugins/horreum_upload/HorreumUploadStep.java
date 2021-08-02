@@ -1,7 +1,6 @@
 package jenkins.plugins.horreum_upload;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -9,7 +8,6 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 import org.antlr.v4.runtime.misc.NotNull;
-import org.apache.http.HttpHeaders;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl;
 import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepExecution;
@@ -30,295 +28,187 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import jenkins.plugins.horreum_upload.util.HttpRequestNameValuePair;
 
-/**
- * @author Martin d'Anjou
- */
 public final class HorreumUploadStep extends AbstractStepImpl {
 
-    private @Nonnull String test;
-    private @Nonnull String owner;
-    private @Nonnull String access;
-    private @Nonnull String startAccessor;
-    private @Nonnull String stopAccessor;
-    private @Nonnull String schema;
-	private @Nonnull String jsonFile = DescriptorImpl.jsonFile;
-
-	private boolean ignoreSslErrors = DescriptorImpl.ignoreSslErrors;
-	private boolean abortOnFailure = DescriptorImpl.abortOnFailure;
-    private String validResponseCodes         = DescriptorImpl.validResponseCodes;
-    private String validResponseContent       = DescriptorImpl.validResponseContent;
-    private MimeType contentType              = DescriptorImpl.contentType;
-    private Integer timeout                   = DescriptorImpl.timeout;
-    private Boolean consoleLogResponseBody    = DescriptorImpl.consoleLogResponseBody;
-    private Boolean quiet                     = DescriptorImpl.quiet;
-    private String authentication             = DescriptorImpl.authentication;
-    private List<HttpRequestNameValuePair> customHeaders = DescriptorImpl.customHeaders;
-	private ResponseHandle responseHandle = DescriptorImpl.responseHandle;
-
-	public boolean isIgnoreSslErrors() {
-		return ignoreSslErrors;
-	}
+	HorreumUploadConfig config;
 
 	@DataBoundConstructor
 	public HorreumUploadStep(@Nonnull String test, @Nonnull String owner,
-			@Nonnull String access, @Nonnull String startAccessor,
-			@Nonnull String stopAccessor, @NotNull String schema, @Nonnull String jsonFile) {
-		this.test = test;
-		this.owner = owner;
-		this.access = access;
-		this.startAccessor = startAccessor;
-		this.stopAccessor = stopAccessor;
-		this.schema = schema;
-		this.jsonFile = jsonFile;
+							 @Nonnull String access, @Nonnull String startAccessor,
+							 @Nonnull String stopAccessor, @NotNull String schema, @Nonnull String jsonFile) {
+		this.config = new HorreumUploadConfig(test, owner, access, startAccessor, stopAccessor, schema, jsonFile);
+
+		//Populate step config from Global state
+		HorreumUploadGlobalConfig globalConfig =  HorreumUploadGlobalConfig.get();
+		this.config.setKeycloakRealm(globalConfig.getKeycloakRealm());
+		this.config.setHorreumCredentialsID(globalConfig.getCredentialsId());
+		this.config.setKeycloakRealm(globalConfig.getKeycloakRealm());
+		this.config.setHorreumClientSecretID(globalConfig.getClientSecretId());
+
 	}
 
 	public boolean getAbortOnFailure() {
-		return abortOnFailure;
+		return config.getAbortOnFailure();
 	}
 
 	@DataBoundSetter
 	public void setAbortOnFailure(boolean abortOnFailure) {
-		this.abortOnFailure = abortOnFailure;
+		this.config.setAbortOnFailure(abortOnFailure);
 	}
 
 	@DataBoundSetter
-	public void setIgnoreSslErrors(boolean ignoreSslErrors) {
-		this.ignoreSslErrors = ignoreSslErrors;
+	public void setValidResponseCodes(String validResponseCodes) {
+		this.config.setValidResponseCodes(validResponseCodes);
 	}
 
-    @DataBoundSetter
-    public void setValidResponseCodes(String validResponseCodes) {
-        this.validResponseCodes = validResponseCodes;
-    }
+	public String getValidResponseCodes() {
+		return this.config.getValidResponseCodes();
+	}
 
-    public String getValidResponseCodes() {
-        return validResponseCodes;
-    }
+	@DataBoundSetter
+	public void setValidResponseContent(String validResponseContent) {
+		this.config.setValidResponseContent(validResponseContent);
+	}
 
-    @DataBoundSetter
-    public void setValidResponseContent(String validResponseContent) {
-        this.validResponseContent = validResponseContent;
-    }
+	public String getValidResponseContent() {
+		return config.getValidResponseContent();
+	}
 
-    public String getValidResponseContent() {
-        return validResponseContent;
-    }
+	@DataBoundSetter
+	public void setConsoleLogResponseBody(Boolean consoleLogResponseBody) {
+		this.config.setConsoleLogResponseBody(consoleLogResponseBody);
+	}
 
-    @DataBoundSetter
-    public void setContentType(MimeType contentType) {
-        this.contentType = contentType;
-    }
+	public Boolean getConsoleLogResponseBody() {
+		return config.getConsoleLogResponseBody();
+	}
 
-    public MimeType getContentType() {
-        return contentType;
-    }
+	@DataBoundSetter
+	public void setQuiet(Boolean quiet) {
+		this.config.setQuiet(quiet);
+	}
 
-    @DataBoundSetter
-    public void setTimeout(Integer timeout) {
-        this.timeout = timeout;
-    }
+	public Boolean getQuiet() {
+		return config.getQuiet();
+	}
 
-    public Integer getTimeout() {
-        return timeout;
-    }
+	@DataBoundSetter
+	public void setAuthentication(String authentication) {
+		this.config.setAuthentication(authentication);
+	}
 
-    @DataBoundSetter
-    public void setConsoleLogResponseBody(Boolean consoleLogResponseBody) {
-        this.consoleLogResponseBody = consoleLogResponseBody;
-    }
+	public String getAuthentication() {
+		return config.getAuthentication();
+	}
 
-    public Boolean getConsoleLogResponseBody() {
-        return consoleLogResponseBody;
-    }
-
-    @DataBoundSetter
-    public void setQuiet(Boolean quiet) {
-        this.quiet = quiet;
-    }
-
-    public Boolean getQuiet() {
-        return quiet;
-    }
-
-    @DataBoundSetter
-    public void setAuthentication(String authentication) {
-        this.authentication = authentication;
-    }
-
-    public String getAuthentication() {
-        return authentication;
-    }
-
-    @DataBoundSetter
-    public void setCustomHeaders(List<HttpRequestNameValuePair> customHeaders) {
-        this.customHeaders = customHeaders;
-    }
+	@DataBoundSetter
+	public void setCustomHeaders(List<HttpRequestNameValuePair> customHeaders) {
+		this.config.setCustomHeaders(customHeaders);
+	}
 
 	public String getTest() {
-		return test;
+		return config.getTest();
 	}
 
 	@DataBoundSetter
 	public void setTest(String test) {
-		this.test = test;
+		this.config.setTest(test);
 	}
 
 	public String getOwner() {
-		return owner;
+		return config.getOwner();
 	}
 
 	@DataBoundSetter
 	public void setOwner(String owner) {
-		this.owner = owner;
+		this.config.setOwner(owner);
 	}
 
 	public String getAccess() {
-		return access;
+		return this.config.getAccess();
 	}
 
 	@DataBoundSetter
 	public void setAccess(String access) {
-		this.access = access;
+		this.config.setAccess(access);
 	}
 
 	public String getStartAccessor() {
-		return startAccessor;
+		return config.getStartAccessor();
 	}
 
 	@DataBoundSetter
 	public void setStartAccessor(String startAccessor) {
-		this.startAccessor = startAccessor;
+		this.config.setStartAccessor(startAccessor);
 	}
 
 	public String getStopAccessor() {
-		return stopAccessor;
+		return config.getStopAccessor();
 	}
 
 	@DataBoundSetter
 	public void setSchema(String schema) {
-		this.schema = schema;
+		this.config.setSchema(schema);
 	}
 
 	public String getSchema() {
-		return schema;
+		return config.getSchema();
 	}
 
 	@DataBoundSetter
 	public void setStopAccessor(String stopAccessor) {
-		this.stopAccessor = stopAccessor;
+		this.config.setStopAccessor(stopAccessor);
 	}
 
 	public List<HttpRequestNameValuePair> getCustomHeaders() {
-        return customHeaders;
-    }
-
-	public ResponseHandle getResponseHandle() {
-		return responseHandle;
-	}
-
-
-	@DataBoundSetter
-	public void setResponseHandle(ResponseHandle responseHandle) {
-		this.responseHandle = responseHandle;
+		return config.getCustomHeaders();
 	}
 
 	public String getJsonFile() {
-		return jsonFile;
+		return config.getJsonFile();
 	}
 
 	@DataBoundSetter
 	public void setJsonFile(String jsonFile) {
-		this.jsonFile = jsonFile;
+		this.config.setJsonFile(jsonFile);
 	}
 
 
 	@Override
-    public DescriptorImpl getDescriptor() {
-        return (DescriptorImpl) super.getDescriptor();
-    }
-
-	List<HttpRequestNameValuePair> resolveHeaders() {
-		final List<HttpRequestNameValuePair> headers = new ArrayList<>();
-		if (contentType != null && contentType != MimeType.NOT_SET) {
-			headers.add(new HttpRequestNameValuePair(HttpHeaders.CONTENT_TYPE, contentType.getContentType().toString()));
-		}
-		for (HttpRequestNameValuePair header : customHeaders) {
-			String headerName = header.getName();
-			String headerValue = header.getValue();
-			boolean maskValue = headerName.equalsIgnoreCase(HttpHeaders.AUTHORIZATION) ||
-					header.getMaskValue();
-
-			headers.add(new HttpRequestNameValuePair(headerName, headerValue, maskValue));
-		}
-		return headers;
-	}
-
-	public List<HttpRequestNameValuePair> resolveParams() {
-		List<HttpRequestNameValuePair> params = new ArrayList<>();
-		params.add(new HttpRequestNameValuePair("test",this.test));
-		params.add(new HttpRequestNameValuePair("owner",this.owner));
-		params.add(new HttpRequestNameValuePair("access",this.access));
-		params.add(new HttpRequestNameValuePair("start",this.startAccessor));
-		params.add(new HttpRequestNameValuePair("stop",this.stopAccessor));
-		params.add(new HttpRequestNameValuePair("schema",this.schema));
-		return params;
+	public DescriptorImpl getDescriptor() {
+		return (DescriptorImpl) super.getDescriptor();
 	}
 
 
 	@Extension
-    public static final class DescriptorImpl extends AbstractStepDescriptorImpl {
-        public static final boolean ignoreSslErrors = HorreumUpload.DescriptorImpl.ignoreSslErrors;
-        public static final boolean abortOnFailure = HorreumUpload.DescriptorImpl.abortOnFailure;
-		public static final String   validResponseCodes        = HorreumUpload.DescriptorImpl.validResponseCodes;
-		public static final String   validResponseContent      = HorreumUpload.DescriptorImpl.validResponseContent;
-		public static final MimeType contentType               = HorreumUpload.DescriptorImpl.contentType;
-        public static final int      timeout                   = HorreumUpload.DescriptorImpl.timeout;
-        public static final Boolean  consoleLogResponseBody    = HorreumUpload.DescriptorImpl.consoleLogResponseBody;
-        public static final Boolean  quiet                     = HorreumUpload.DescriptorImpl.quiet;
-        public static final String   authentication            = HorreumUpload.DescriptorImpl.authentication;
-        public static final String   requestBody               = HorreumUpload.DescriptorImpl.requestBody;
-        public static final String jsonFile = HorreumUpload.DescriptorImpl.jsonFile;
-        public static final List <HttpRequestNameValuePair> customHeaders = Collections.emptyList();
-		public static final ResponseHandle responseHandle = ResponseHandle.STRING;
+	public static final class DescriptorImpl extends AbstractStepDescriptorImpl {
+		public static final boolean abortOnFailure = HorreumUpload.DescriptorImpl.abortOnFailure;
+		public static final String validResponseCodes = HorreumUpload.DescriptorImpl.validResponseCodes;
+		public static final String validResponseContent = HorreumUpload.DescriptorImpl.validResponseContent;
+		public static final Boolean consoleLogResponseBody = HorreumUpload.DescriptorImpl.consoleLogResponseBody;
+		public static final Boolean quiet = HorreumUpload.DescriptorImpl.quiet;
+		public static final String authentication = HorreumUpload.DescriptorImpl.authentication;
+		public static final String jsonFile = HorreumUpload.DescriptorImpl.jsonFile;
+		public static final List<HttpRequestNameValuePair> customHeaders = Collections.emptyList();
 
-        public DescriptorImpl() {
-            super(Execution.class);
-        }
-
-		@Override
-        public String getFunctionName() {
-            return "horreumUpload";
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "Uplaod a JSON object to a Horreum instance";
-        }
-
-        public ListBoxModel doFillHttpModeItems() {
-            return HttpMode.getFillItems();
-        }
-
-        public ListBoxModel doFillAcceptTypeItems() {
-            return MimeType.getContentTypeFillItems();
-        }
-
-        public ListBoxModel doFillContentTypeItems() {
-            return MimeType.getContentTypeFillItems();
-        }
-
-		public ListBoxModel doFillResponseHandleItems() {
-			ListBoxModel items = new ListBoxModel();
-			for (ResponseHandle responseHandle : ResponseHandle.values()) {
-				items.add(responseHandle.name());
-			}
-			return items;
+		public DescriptorImpl() {
+			super(Execution.class);
 		}
 
-        public ListBoxModel doFillAuthenticationItems(@AncestorInPath Item project,
+		@Override
+		public String getFunctionName() {
+			return "horreumUpload";
+		}
+
+		@Override
+		public String getDisplayName() {
+			return "Uplaod a JSON object to a Horreum instance";
+		}
+
+		public ListBoxModel doFillAuthenticationItems(@AncestorInPath Item project,
 													  @QueryParameter String url) {
-            return HorreumUpload.DescriptorImpl.fillAuthenticationItems(project, url);
-        }
+			return HorreumUpload.DescriptorImpl.fillAuthenticationItems(project, url);
+		}
 
 		public ListBoxModel doFillProxyAuthenticationItems(@AncestorInPath Item project,
 														   @QueryParameter String url) {
@@ -326,15 +216,15 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 		}
 
 		public FormValidation doCheckValidResponseCodes(@QueryParameter String value) {
-            return HorreumUpload.DescriptorImpl.checkValidResponseCodes(value);
-        }
+			return HorreumUpload.DescriptorImpl.checkValidResponseCodes(value);
+		}
 
-    }
+	}
 
-    public static final class Execution extends AbstractSynchronousNonBlockingStepExecution<ResponseContentSupplier> {
+	public static final class Execution extends AbstractSynchronousNonBlockingStepExecution<ResponseContentSupplier> {
 
-        @Inject
-        private transient HorreumUploadStep step;
+		@Inject
+		private transient HorreumUploadStep step;
 
 		@StepContextParameter
 		private transient Run<?, ?> run;
@@ -343,11 +233,11 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 
 		@Override
 		protected ResponseContentSupplier run() throws Exception {
-			HorreumUploadExecution exec = HorreumUploadExecution.from(step,
+			HorreumUploadExecutionContext exec = HorreumUploadExecutionContext.from(step.config, null, //TODO:: obtain reference to envVars
 					step.getQuiet() ? TaskListener.NULL : listener,
-					this);
+					() -> this.resolveUploadFile());
 
-			exec.getAuthenticator().resolveCredentials();
+			exec.initialiseContext();
 
 			Launcher launcher = getContext().get(Launcher.class);
 			if (launcher != null) {
@@ -361,7 +251,7 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 			return exec.call();
 		}
 
-        private static final long serialVersionUID = 1L;
+		private static final long serialVersionUID = 1L;
 
 		FilePath resolveUploadFile() {
 			String uploadFile = step.getJsonFile();

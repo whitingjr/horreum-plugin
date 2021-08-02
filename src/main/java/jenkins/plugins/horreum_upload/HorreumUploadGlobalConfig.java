@@ -14,7 +14,6 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
-import com.cloudbees.plugins.credentials.common.UsernamePasswordCredentials;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 
 import hudson.Extension;
@@ -29,19 +28,15 @@ import hudson.util.XStream2;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 
-import jenkins.plugins.horreum_upload.auth.Authenticator;
 import jenkins.plugins.horreum_upload.auth.KeycloakAuthentication;
 import jenkins.plugins.horreum_upload.util.HttpRequestNameValuePair;
 
-/**
- * @author Martin d'Anjou
- */
 @Extension
 public class HorreumUploadGlobalConfig extends GlobalConfiguration {
 
 	private String baseUrl;
 
-    private KeycloakAuthentication oauthAuthentication = new KeycloakAuthentication();
+    private static KeycloakAuthentication KEYCLOAK_AUTHENTICATION = new KeycloakAuthentication();
 
     private static final XStream2 XSTREAM2 = new XStream2();
 
@@ -110,50 +105,16 @@ public class HorreumUploadGlobalConfig extends GlobalConfiguration {
 	}
 
 
-	public static FormValidation validateKeyName(String value) {
-		List<Authenticator> list = HorreumUploadGlobalConfig.get().getAuthentications();
-
-		int count = 0;
-		for (Authenticator basicAuthentication : list) {
-			if (basicAuthentication.getKeyName().equals(value)) {
-				count++;
-			}
-		}
-
-		if (count > 1) {
-			return FormValidation.error("The Key Name must be unique");
-		}
-
-		return FormValidation.validateRequired(value);
-	}
-
     public static HorreumUploadGlobalConfig get() {
         return GlobalConfiguration.all().get(HorreumUploadGlobalConfig.class);
     }
 
     public KeycloakAuthentication getOauthAuthentication() {
-        return oauthAuthentication;
+        return KEYCLOAK_AUTHENTICATION;
     }
 
-	@DataBoundSetter
-    public void setOauthAuthentication(
-            KeycloakAuthentication oauthAuthentication) {
-	        this.oauthAuthentication = oauthAuthentication;
-    }
-
-    public List<Authenticator> getAuthentications() {
-        List<Authenticator> list = new ArrayList<>();
-        list.add(oauthAuthentication);
-        return list;
-    }
-
-    public Authenticator getAuthentication(String keyName) {
-        for (Authenticator authenticator : getAuthentications()) {
-            if (authenticator.getKeyName().equals(keyName)) {
-                return authenticator;
-            }
-        }
-        return null;
+    public KeycloakAuthentication getAuthentication() {
+    	return KEYCLOAK_AUTHENTICATION;
     }
 
     public String getBaseUrl(){
@@ -166,43 +127,48 @@ public class HorreumUploadGlobalConfig extends GlobalConfiguration {
 	}
 
 	public String getKeyName(){
-    	return this.oauthAuthentication.getKeyName();
+    	return this.KEYCLOAK_AUTHENTICATION.getKeyName();
 	}
 
 	public void setKeycloakBaseUrl(
 			String baseUrl) {
-		this.oauthAuthentication.setKeycloakBaseUrl(baseUrl);
+		this.KEYCLOAK_AUTHENTICATION.setKeycloakBaseUrl(baseUrl);
 	}
 
 	public String getKeycloakBaseUrl(){
-		return this.oauthAuthentication.getKeycloakBaseUrl();
+		return this.KEYCLOAK_AUTHENTICATION.getKeycloakBaseUrl();
 	}
 
 	public String getKeycloakRealm(){
-		return this.oauthAuthentication.getKeycloakRealm();
+		return this.KEYCLOAK_AUTHENTICATION.getKeycloakRealm();
 	}
 
 	public void setKeycloakRealm(String realm){
-		this.oauthAuthentication.setKeycloakRealm(realm);
+		this.KEYCLOAK_AUTHENTICATION.setKeycloakRealm(realm);
 	}
 
 	public String getClientId(){
-    	return this.oauthAuthentication.getClientId();
+    	return this.KEYCLOAK_AUTHENTICATION.getClientId();
 	}
 	public void setClientId( String clientId){
-    	this.oauthAuthentication.setClientId(clientId);
+    	this.KEYCLOAK_AUTHENTICATION.setClientId(clientId);
 	}
 
 	public String getCredentialsId(){
-    	return this.oauthAuthentication.getHorreumCredentialsID();
+    	return this.KEYCLOAK_AUTHENTICATION.getHorreumCredentialsID();
 	}
 	public void setCredentialsId(String id){
-		this.oauthAuthentication.setHorreumCredentialsID(id);
+		this.KEYCLOAK_AUTHENTICATION.setHorreumCredentialsID(id);
 	}
 	public String getClientSecretId(){
-    	return this.oauthAuthentication.getHorreumClientSecretID();
+    	return this.KEYCLOAK_AUTHENTICATION.getHorreumClientSecretID();
 	}
 	public void setClientSecretId(String id){
-		this.oauthAuthentication.setHorreumClientSecretID(id);
+		this.KEYCLOAK_AUTHENTICATION.setHorreumClientSecretID(id);
+	}
+
+
+	public static KeycloakAuthentication getKeycloakAuthentication(){
+    	return KEYCLOAK_AUTHENTICATION;
 	}
 }

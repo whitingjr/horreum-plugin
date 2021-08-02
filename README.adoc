@@ -18,8 +18,6 @@ This plugin sends a JSON result object to a Horreum instance secured by Keycloak
 execution in Jenkins and if the upload is unsuccessful, the job can be marked as failed
 (configurable).
 
-This plugin has been heavily inspired by the Jenkins HTTP Upload Plugin : https://github.com/jenkinsci/http-request-plugin[]
-
 == Features
 
 The following features are available in both Pipeline and traditional project types:
