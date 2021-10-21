@@ -37,8 +37,8 @@ horreumUpload (
     test: 'Dummy Test'
     , owner: 'dev-team'
     , access: 'PUBLIC'
-    , startAccessor: '$.build-timestamp'
-    , stopAccessor: '$.build-timestamp'
+    , start: '$.build-timestamp'
+    , stop: '$.build-timestamp'
     , jsonFile: 'run/localhost/output.json'
 )
 
@@ -52,8 +52,8 @@ def response = horreumUpload (
     test: 'Dummy Test'
     , owner: 'dev-team'
     , access: 'PUBLIC'
-    , startAccessor: '$.build-timestamp'
-    , stopAccessor: '$.build-timestamp'
+    , start: '$.build-timestamp'
+    , stop: '$.build-timestamp'
     , jsonFile: 'run/localhost/output.json'
     , abortOnfailure: false
     , quiet: false

@@ -1,4 +1,4 @@
 <?jelly escape-by-default='true'?>
 <div>
-  This plugin Uploads data to a Horreum Server
+  This plugin handles communication with Horreum.
 </div>
