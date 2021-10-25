@@ -6,7 +6,6 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
-import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl;
 import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepExecution;
 import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
 import org.kohsuke.stapler.AncestorInPath;
@@ -22,11 +21,11 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.ListBoxModel;
+import jenkins.plugins.horreum.BaseExecutionContext;
+import jenkins.plugins.horreum.HorreumBaseStep;
 import jenkins.plugins.horreum.HorreumGlobalConfig;
 
-public final class HorreumUploadStep extends AbstractStepImpl {
-
-	HorreumUploadConfig config;
+public final class HorreumUploadStep extends HorreumBaseStep<HorreumUploadConfig> {
 
 	@DataBoundConstructor
 	public HorreumUploadStep(String test,
@@ -36,50 +35,8 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 									 String stop,
 									 String schema,
 									 String jsonFile) {
-		if (test == null || test.isEmpty()) {
-			throw new IllegalArgumentException("Test name (or ID) must be set.");
-		}
-		owner = orEmpty(owner);
-		access = orEmpty(access);
-		if (start == null || start.isEmpty()) {
-			throw new IllegalArgumentException("Start timestamp must be set.");
-		}
-		if (stop == null || stop.isEmpty()) {
-			throw new IllegalArgumentException("Stop timestamp must be set.");
-		}
-		schema = orEmpty(schema);
-		if (jsonFile == null || jsonFile.isEmpty()) {
-			throw new IllegalArgumentException("JSON file must be set.");
-		}
-		this.config = new HorreumUploadConfig(orEmpty(test), owner, access, start, stop, schema, jsonFile);
 
-		//Populate step config from Global state
-		HorreumGlobalConfig globalConfig = HorreumGlobalConfig.get();
-		this.config.setKeycloakRealm(globalConfig.getKeycloakRealm());
-		this.config.setClientId(globalConfig.getClientId());
-		this.config.setHorreumCredentialsID(globalConfig.getCredentialsId());
-	}
-
-	private @Nonnull String orEmpty(String value) {
-		return value == null ? "" : value;
-	}
-
-	public boolean getAbortOnFailure() {
-		return config.getAbortOnFailure();
-	}
-
-	@DataBoundSetter
-	public void setAbortOnFailure(boolean abortOnFailure) {
-		this.config.setAbortOnFailure(abortOnFailure);
-	}
-
-	public Boolean getQuiet() {
-		return config.getQuiet();
-	}
-
-	@DataBoundSetter
-	public void setQuiet(Boolean quiet) {
-		this.config.setQuiet(quiet);
+		super(new HorreumUploadConfig(test, owner, access, start, stop, schema, jsonFile));
 	}
 
 	public String getTest() {
@@ -152,8 +109,6 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 
 	@Extension
 	public static final class DescriptorImpl extends AbstractStepDescriptorImpl {
-		public static final Boolean quiet = HorreumUpload.DescriptorImpl.quiet;
-		public static final Boolean abortOnFailure = HorreumUpload.DescriptorImpl.abortOnFailure;
 		public static final String jsonFile = HorreumUpload.DescriptorImpl.jsonFile;
 
 		public DescriptorImpl() {
@@ -176,31 +131,13 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 		}
 	}
 
-	public static final class Execution extends AbstractSynchronousNonBlockingStepExecution<String> {
-
+	public static final class Execution extends HorreumBaseStep.Execution<String> {
 		@Inject
 		private transient HorreumUploadStep step;
 
-		@StepContextParameter
-		private transient Run<?, ?> run;
-		@StepContextParameter
-		private transient TaskListener listener;
-
 		@Override
-		protected String run() throws Exception {
-			HorreumUploadExecutionContext exec = HorreumUploadExecutionContext.from(step.config, null, //TODO:: obtain reference to envVars
-					listener, this::resolveUploadFile);
-
-			Launcher launcher = getContext().get(Launcher.class);
-			if (launcher != null) {
-				VirtualChannel channel = launcher.getChannel();
-				if (channel == null) {
-					throw new IllegalStateException("Launcher doesn't support remoting but it is required");
-				}
-				return channel.call(exec);
-			}
-
-			return exec.call();
+		protected BaseExecutionContext<String> createExecutionContext() throws Exception {
+			return HorreumUploadExecutionContext.from(step.config, null, getContext().get(TaskListener.class), this::resolveUploadFile);
 		}
 
 		private static final long serialVersionUID = 1L;
@@ -225,10 +162,6 @@ public final class HorreumUploadStep extends AbstractStepImpl {
 			} catch (IOException | InterruptedException e) {
 				throw new IllegalStateException(e);
 			}
-		}
-
-		public Item getProject() {
-			return run.getParent();
 		}
 	}
 }

@@ -17,7 +17,7 @@ public class HorreumUploadStepTest extends HorreumPluginTestBase {
       createOrLookupTest();
 
       URL jsonResource = Thread.currentThread().getContextClassLoader().getResource("data/config-quickstart.jvm.json");
-      WorkflowJob proj = j.jenkins.createProject(WorkflowJob.class, "proj");
+      WorkflowJob proj = j.jenkins.createProject(WorkflowJob.class, "Horreum-Upload-Pipeline");
       proj.setDefinition(new CpsFlowDefinition(
             "node {\n" +
             "def id = horreumUpload(\n" +

@@ -1,9 +1,6 @@
 package jenkins.plugins.horreum.upload;
 
-import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,33 +8,21 @@ import java.util.function.Supplier;
 
 import javax.ws.rs.WebApplicationException;
 
-import hudson.CloseProofOutputStream;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.TaskListener;
-import hudson.remoting.RemoteOutputStream;
 import io.hyperfoil.tools.HorreumClient;
 import io.hyperfoil.tools.horreum.entity.json.Access;
 import io.hyperfoil.tools.yaup.json.Json;
+import jenkins.plugins.horreum.BaseExecutionContext;
 import jenkins.plugins.horreum.HorreumGlobalConfig;
-import jenkins.plugins.horreum.auth.KeycloakAuthentication;
 import jenkins.plugins.horreum.util.HttpRequestNameValuePair;
-import jenkins.security.MasterToSlaveCallable;
 
-public class HorreumUploadExecutionContext extends MasterToSlaveCallable<String, RuntimeException> {
+public class HorreumUploadExecutionContext extends BaseExecutionContext<String> {
 
 	private static final long serialVersionUID = -2066857816168989599L;
-	private final String url;
-
 	private final Map<String, HttpRequestNameValuePair> params;
-
 	private final FilePath uploadFile;
-
-	private final KeycloakAuthentication keycloak;
-
-	private final OutputStream remoteLogger;
-	private transient PrintStream localLogger;
-	private boolean abortOnFailure;
 
 	static HorreumUploadExecutionContext from(HorreumUploadConfig config,
 											  EnvVars envVars, TaskListener listener, Supplier<FilePath> filePathSupplier) {
@@ -48,7 +33,6 @@ public class HorreumUploadExecutionContext extends MasterToSlaveCallable<String,
 
 		HorreumUploadExecutionContext context = new HorreumUploadExecutionContext(
 				url,
-				config.getAbortOnFailure(),
 				params,
 				uploadFile,
 				taskListener.getLogger());
@@ -57,40 +41,20 @@ public class HorreumUploadExecutionContext extends MasterToSlaveCallable<String,
 	}
 
 	private HorreumUploadExecutionContext(
-			String url, boolean abortOnFailure,
+			String url,
 			List<HttpRequestNameValuePair> params,
 			FilePath uploadFile,
 			PrintStream logger
 	) {
-		this.url = url;
-		this.abortOnFailure = abortOnFailure;
-
+		super(url, logger);
 		this.params = new HashMap<>();
-
 		params.forEach(param -> this.params.put(param.getName(), param));
-
-		keycloak = HorreumGlobalConfig.get().getAuthentication();
-
 		this.uploadFile = uploadFile;
-
-		this.localLogger = logger;
-		this.remoteLogger = new RemoteOutputStream(new CloseProofOutputStream(logger));
 	}
 
 	@Override
 	public String call() throws RuntimeException {
-		logger().println("URL: " + url);
-
-		HorreumClient.Builder clientBuilder = new HorreumClient.Builder()
-				.horreumUrl(url)
-				.keycloakUrl(keycloak.getKeycloakBaseUrl())
-				.keycloakRealm(keycloak.getKeycloakRealm())
-				.clientId(keycloak.getClientId())
-				.horreumUser(keycloak.getUsername())
-				.horreumPassword(keycloak.getPassword());
-
-
-		HorreumClient client = clientBuilder.build();
+		HorreumClient client = createClient();
 
 		Json json = Json.fromFile(uploadFile.getRemote());
 
@@ -113,17 +77,6 @@ public class HorreumUploadExecutionContext extends MasterToSlaveCallable<String,
 			logger().printf("Request failed with status %d, message: %s", e.getResponse().getStatus(), e.getResponse().getEntity());
 			throw e;
 		}
-	}
-
-	private PrintStream logger() {
-		if (localLogger == null) {
-			try {
-				localLogger = new PrintStream(remoteLogger, true, StandardCharsets.UTF_8.name());
-			} catch (UnsupportedEncodingException e) {
-				throw new IllegalStateException(e);
-			}
-		}
-		return localLogger;
 	}
 
 }

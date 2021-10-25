@@ -10,9 +10,10 @@ import javax.annotation.Nonnull;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import jenkins.plugins.horreum.HorreumBaseConfig;
 import jenkins.plugins.horreum.util.HttpRequestNameValuePair;
 
-public class HorreumUploadConfig {
+public class HorreumUploadConfig extends HorreumBaseConfig {
 
 	private @Nonnull String test;
 	private @Nonnull String owner;
@@ -22,14 +23,22 @@ public class HorreumUploadConfig {
 	private @Nonnull String schema;
 	private @Nonnull String jsonFile;
 
-	private Boolean quiet                     = HorreumUploadStep.DescriptorImpl.quiet;
-	private Boolean abortOnFailure            = HorreumUploadStep.DescriptorImpl.abortOnFailure;
-
-	private String keycloakRealm;
-	private String clientId;
-	private String credentialsID;
-
-	public HorreumUploadConfig(@Nonnull String test, @Nonnull String owner, @Nonnull String access, @Nonnull String start, @Nonnull String stop, @Nonnull String schema, @Nonnull String jsonFile) {
+	public HorreumUploadConfig(String test, String owner, String access, String start, String stop, String schema, String jsonFile) {
+		if (test == null || test.isEmpty()) {
+			throw new IllegalArgumentException("Test name (or ID) must be set.");
+		}
+		owner = orEmpty(owner);
+		access = orEmpty(access);
+		if (start == null || start.isEmpty()) {
+			throw new IllegalArgumentException("Start timestamp must be set.");
+		}
+		if (stop == null || stop.isEmpty()) {
+			throw new IllegalArgumentException("Stop timestamp must be set.");
+		}
+		schema = orEmpty(schema);
+		if (jsonFile == null || jsonFile.isEmpty()) {
+			throw new IllegalArgumentException("JSON file must be set.");
+		}
 		this.test = Objects.requireNonNull(test);
 		this.owner = Objects.requireNonNull(owner);
 		this.access = Objects.requireNonNull(access);
@@ -100,47 +109,6 @@ public class HorreumUploadConfig {
 
 	public void setJsonFile(@Nonnull String jsonFile) {
 		this.jsonFile = jsonFile;
-	}
-
-	public boolean getAbortOnFailure() {
-		return abortOnFailure;
-	}
-
-	public void setAbortOnFailure(boolean abortOnFailure) {
-		this.abortOnFailure = abortOnFailure;
-	}
-
-	public Boolean getQuiet() {
-		return quiet;
-	}
-
-	public void setQuiet(@Nonnull Boolean quiet) {
-		this.quiet = quiet;
-	}
-
-	//TODO:: abstract away keycloak specific config
-	public String getKeycloakRealm() {
-		return keycloakRealm;
-	}
-
-	public void setKeycloakRealm(String keycloakRealm) {
-		this.keycloakRealm = keycloakRealm;
-	}
-
-	public String getClientId() {
-		return clientId;
-	}
-
-	public void setClientId(String clientId) {
-		this.clientId = clientId;
-	}
-
-	public String getHorreumCredentialsID() {
-		return credentialsID;
-	}
-
-	public void setHorreumCredentialsID(String credentialsID) {
-		this.credentialsID = credentialsID;
 	}
 
 	FilePath resolveUploadFile(EnvVars envVars, AbstractBuild<?,?> build) {

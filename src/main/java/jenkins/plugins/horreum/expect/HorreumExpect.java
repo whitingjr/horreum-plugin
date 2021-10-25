@@ -1,13 +1,10 @@
-package jenkins.plugins.horreum.upload;
+package jenkins.plugins.horreum.expect;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nonnull;
 
-import org.antlr.v4.runtime.misc.NotNull;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -21,12 +18,10 @@ import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Item;
-import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
@@ -35,17 +30,15 @@ import hudson.util.ListBoxModel.Option;
 import jenkins.plugins.horreum.HorreumBaseBuilder;
 import jenkins.plugins.horreum.HorreumGlobalConfig;
 
-//TODO: Make safe functionality as upload step
-public class HorreumUpload extends HorreumBaseBuilder<HorreumUploadConfig> {
+public class HorreumExpect extends HorreumBaseBuilder<HorreumExpectConfig> {
+
 	@DataBoundConstructor
-	public HorreumUpload(@Nonnull String test,
-								@Nonnull String owner,
-								@Nonnull String access,
-								@Nonnull String start,
-								@Nonnull String stop,
-								@NotNull String schema,
-								@Nonnull String jsonFile) {
-		super(new HorreumUploadConfig(test, owner, access, start, stop, schema, jsonFile));
+	public HorreumExpect(@Nonnull String test,
+								@Nonnull long timeout,
+								@Nonnull String tags,
+								@Nonnull String expectedBy,
+								@Nonnull String backlink) {
+		super(new HorreumExpectConfig(test, timeout, tags, expectedBy, backlink));
 	}
 
 	public String getTest() {
@@ -57,69 +50,51 @@ public class HorreumUpload extends HorreumBaseBuilder<HorreumUploadConfig> {
 		this.config.setTest(test);
 	}
 
-	public String getOwner() {
-		return config.getOwner();
+	public long getTimeout() {
+		return config.getTimeout();
 	}
 
 	@DataBoundSetter
-	public void setOwner(String owner) {
-		this.config.setOwner(owner);
+	public void setTimeout(long timeout) {
+		this.config.setTimeout(timeout);
 	}
 
-	public String getAccess() {
-		return this.config.getAccess();
-	}
-
-	@DataBoundSetter
-	public void setAccess(String access) {
-		this.config.setAccess(access);
-	}
-
-	public String getStart() {
-		return config.getStart();
+	public String getTags() {
+		return this.config.getTags();
 	}
 
 	@DataBoundSetter
-	public void setStart(String start) {
-		this.config.setStart(start);
+	public void setTags(String tags) {
+		this.config.setTags(tags);
 	}
 
-	public String getStop() {
-		return config.getStop();
-	}
-
-	@DataBoundSetter
-	public void setStop(String stop) {
-		this.config.setStop(stop);
+	public String getExpectedBy() {
+		return config.getExpectedBy();
 	}
 
 	@DataBoundSetter
-	public void setSchema(String schema) {
-		this.config.setSchema(schema);
+	public void setExpectedBy(String expectedBy) {
+		this.config.setExpectedBy(expectedBy);
 	}
 
-	public String getSchema() {
-		return config.getSchema();
-	}
-
-	public String getJsonFile() {
-		return config.getJsonFile();
+	public String getBacklink() {
+		return config.getBacklink();
 	}
 
 	@DataBoundSetter
-	public void setJsonFile(String jsonFile) {
-		this.config.setJsonFile(jsonFile);
+	public void setBacklink(String backlink) {
+		this.config.setBacklink(backlink);
 	}
 
 	@Override
-	protected HorreumUploadExecutionContext createExecutionContext(AbstractBuild<?, ?> build, BuildListener listener, EnvVars envVars) {
-		return HorreumUploadExecutionContext.from(config, envVars,
-				listener, () -> this.config.resolveUploadFile(envVars, build));
+	protected HorreumExpectExecutionContext createExecutionContext(AbstractBuild<?, ?> build, BuildListener listener, EnvVars envVars) {
+		return HorreumExpectExecutionContext.from(config, envVars, listener);
 	}
 
 	@Extension
 	public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
-		public static final String jsonFile = "";
+		public static final boolean abortOnFailure = true;
+		public static final Boolean quiet = false;
 
 		public DescriptorImpl() {
 			load();
@@ -132,7 +107,7 @@ public class HorreumUpload extends HorreumBaseBuilder<HorreumUploadConfig> {
 
 		@Override
 		public String getDisplayName() {
-			return "Horreum Upload";
+			return "Horreum Expect Run";
 		}
 
 		public ListBoxModel doFillAuthenticationItems(@AncestorInPath Item project,
@@ -155,14 +130,6 @@ public class HorreumUpload extends HorreumBaseBuilder<HorreumUploadConfig> {
 							project, StandardUsernamePasswordCredentials.class,
 							URIRequirementBuilder.fromUri(url).build());
 			items.addMissing(options);
-			return items;
-		}
-
-		public ListBoxModel doFillAccessItems(@AncestorInPath Item item, @QueryParameter String credentialsId) {
-			ListBoxModel items = new ListBoxModel();
-			items.add("PUBLIC");
-			items.add("PROTECTED");
-			items.add("PRIVATE");
 			return items;
 		}
 	}
