@@ -19,8 +19,8 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 	private static final long serialVersionUID = -4370238820425771639L;
 	private static final String keyName = "keycloak";
 
-	private String keycloakBaseUrl;
-	private String keycloakRealm;
+	private String baseUrl;
+	private String realm;
 	private String clientId;
 	private String credentialsID;
 
@@ -32,20 +32,20 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 		return keyName;
 	}
 
-	public void setKeycloakBaseUrl(String keycloakBaseUrl) {
-		this.keycloakBaseUrl = keycloakBaseUrl;
+	public void setBaseUrl(String baseUrl) {
+		this.baseUrl = baseUrl;
 	}
 
-	public void setKeycloakRealm(String keycloakRealm) {
-		this.keycloakRealm = keycloakRealm;
+	public void setRealm(String realm) {
+		this.realm = realm;
 	}
 
-	public String getKeycloakBaseUrl() {
-		return keycloakBaseUrl;
+	public String getBaseUrl() {
+		return baseUrl;
 	}
 
-	public String getKeycloakRealm() {
-		return keycloakRealm;
+	public String getRealm() {
+		return realm;
 	}
 
 	public String getClientId() {
@@ -73,10 +73,10 @@ public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuth
 	}
 
 	private void validateConfiguration() throws IllegalStateException {
-		if ( keycloakBaseUrl == null ){
+		if ( baseUrl == null ){
 			throw  new IllegalStateException("Keycloak Base URL can not be empty");
 		}
-		if ( keycloakRealm == null ){
+		if ( realm == null ){
 			throw  new IllegalStateException("Keycloak Realm can not be empty");
 		}
 		if ( clientId == null ){

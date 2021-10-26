@@ -29,11 +29,10 @@ import jenkins.plugins.horreum.util.HttpRequestNameValuePair;
 @Extension
 public class HorreumGlobalConfig extends GlobalConfiguration {
 
-	private String baseUrl;
-
-    private static final KeycloakAuthentication KEYCLOAK_AUTHENTICATION = new KeycloakAuthentication();
-
     private static final XStream2 XSTREAM2 = new XStream2();
+
+	 private String baseUrl;
+	 private final KeycloakAuthentication keycloak = new KeycloakAuthentication();
 
     public HorreumGlobalConfig() {
         load();
@@ -44,8 +43,6 @@ public class HorreumGlobalConfig extends GlobalConfiguration {
         XSTREAM2.addCompatibilityAlias("jenkins.plugins.horreum.HttpRequest$DescriptorImpl", HorreumGlobalConfig.class);
         XSTREAM2.addCompatibilityAlias("jenkins.plugins.horreum.util.NameValuePair", HttpRequestNameValuePair.class);
     }
-
-
 
     @Override
     protected XmlFile getConfigFile() {
@@ -87,7 +84,7 @@ public class HorreumGlobalConfig extends GlobalConfiguration {
    }
 
 	public KeycloakAuthentication getAuthentication() {
-    	return KEYCLOAK_AUTHENTICATION;
+    	return keycloak;
    }
 
    public String getBaseUrl(){
@@ -100,41 +97,41 @@ public class HorreumGlobalConfig extends GlobalConfiguration {
 	}
 
 	public String getKeyName(){
-    	return KEYCLOAK_AUTHENTICATION.getKeyName();
+    	return keycloak.getKeyName();
 	}
 
 	public void setKeycloakBaseUrl(
 			String baseUrl) {
-		KEYCLOAK_AUTHENTICATION.setKeycloakBaseUrl(baseUrl);
+		keycloak.setBaseUrl(baseUrl);
 	}
 
 	public String getKeycloakBaseUrl(){
-		return KEYCLOAK_AUTHENTICATION.getKeycloakBaseUrl();
+		return keycloak.getBaseUrl();
 	}
 
 	public String getKeycloakRealm(){
-		return KEYCLOAK_AUTHENTICATION.getKeycloakRealm();
+		return keycloak.getRealm();
 	}
 
 	public void setKeycloakRealm(String realm){
-		KEYCLOAK_AUTHENTICATION.setKeycloakRealm(realm);
+		keycloak.setRealm(realm);
 	}
 
 	public String getClientId(){
-    	return KEYCLOAK_AUTHENTICATION.getClientId();
+    	return keycloak.getClientId();
 	}
 	public void setClientId( String clientId){
-    	KEYCLOAK_AUTHENTICATION.setClientId(clientId);
+    	keycloak.setClientId(clientId);
 	}
 
 	public String getCredentialsId(){
-    	return KEYCLOAK_AUTHENTICATION.getCredentialsID();
+    	return keycloak.getCredentialsID();
 	}
 	public void setCredentialsId(String id){
-		KEYCLOAK_AUTHENTICATION.setCredentialsID(id);
+		keycloak.setCredentialsID(id);
 	}
 
 	public static KeycloakAuthentication getKeycloakAuthentication(){
-    	return KEYCLOAK_AUTHENTICATION;
+    	return GlobalConfiguration.all().get(HorreumGlobalConfig.class).keycloak;
 	}
 }

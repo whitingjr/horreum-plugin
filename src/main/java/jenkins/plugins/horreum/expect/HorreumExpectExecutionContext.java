@@ -1,9 +1,6 @@
 package jenkins.plugins.horreum.expect;
 
 import java.io.PrintStream;
-import java.util.List;
-
-import javax.ws.rs.WebApplicationException;
 
 import hudson.EnvVars;
 import hudson.model.TaskListener;
@@ -44,18 +41,9 @@ public class HorreumExpectExecutionContext extends BaseExecutionContext<Void> {
 	}
 
 	@Override
-	public Void call() throws RuntimeException {
-		HorreumClient client = createClient();
-
-		try {
-			client.alertingService.expectRun(
-					config.getTest(), config.getTimeout(), config.getTags(), config.getExpectedBy(), backlink
-			);
-			return null;
-		} catch (WebApplicationException e) {
-			logger().printf("Request failed with status %d, message: %s", e.getResponse().getStatus(), e.getResponse().getEntity());
-			throw e;
-		}
+	protected Void invoke(HorreumClient client) {
+		client.alertingService.expectRun(config.getTest(), config.getTimeout(), config.getTags(),
+				config.getExpectedBy(), backlink);
+		return null;
 	}
-
 }

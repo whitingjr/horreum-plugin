@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import javax.ws.rs.WebApplicationException;
-
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.TaskListener;
@@ -53,30 +51,21 @@ public class HorreumUploadExecutionContext extends BaseExecutionContext<String> 
 	}
 
 	@Override
-	public String call() throws RuntimeException {
-		HorreumClient client = createClient();
-
+	protected String invoke(HorreumClient client) {
 		Json json = Json.fromFile(uploadFile.getRemote());
-
 		String schema = params.get("schema").getValue();
-		try {
-			String id = client.runService.addRunFromData(
-					params.get("start").getValue(),
-					params.get("stop").getValue(),
-					params.get("test").getValue(),
-					params.get("owner").getValue(),
-					Access.valueOf(params.get("access").getValue()),
-					null,
-					"".equals(schema) ? null : schema,
-					null,
-					json
-			);
-			logger().printf("Uploaded run ID: %s%n", id);
-			return id;
-		} catch (WebApplicationException e) {
-			logger().printf("Request failed with status %d, message: %s", e.getResponse().getStatus(), e.getResponse().getEntity());
-			throw e;
-		}
+		String id = client.runService.addRunFromData(
+				params.get("start").getValue(),
+				params.get("stop").getValue(),
+				params.get("test").getValue(),
+				params.get("owner").getValue(),
+				Access.valueOf(params.get("access").getValue()),
+				null,
+				"".equals(schema) ? null : schema,
+				null,
+				json
+		);
+		logger().printf("Uploaded run ID: %s%n", id);
+		return id;
 	}
-
 }
