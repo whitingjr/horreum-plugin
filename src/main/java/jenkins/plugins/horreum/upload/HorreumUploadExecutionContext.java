@@ -1,17 +1,21 @@
 package jenkins.plugins.horreum.upload;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.TaskListener;
 import io.hyperfoil.tools.HorreumClient;
 import io.hyperfoil.tools.horreum.entity.json.Access;
-import io.hyperfoil.tools.yaup.json.Json;
 import jenkins.plugins.horreum.BaseExecutionContext;
 import jenkins.plugins.horreum.HorreumGlobalConfig;
 import jenkins.plugins.horreum.util.HttpRequestNameValuePair;
@@ -52,7 +56,12 @@ public class HorreumUploadExecutionContext extends BaseExecutionContext<String> 
 
 	@Override
 	protected String invoke(HorreumClient client) {
-		Json json = Json.fromFile(uploadFile.getRemote());
+		JsonNode json = null;
+		try {
+			json = new ObjectMapper().readTree(new File(uploadFile.getRemote()));
+		} catch (IOException e) {
+			throw new RuntimeException("File for upload cannot be read: " + uploadFile.getRemote(), e);
+		}
 		String schema = params.get("schema").getValue();
 		String id = client.runService.addRunFromData(
 				params.get("start").getValue(),

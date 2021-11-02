@@ -255,13 +255,6 @@ THE SOFTWARE.
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Import yaup and clean up dependencies	-->
-		<dependency>
-			<groupId>io.hyperfoil.tools</groupId>
-			<artifactId>yaup</artifactId>
-			<version>0.8.6</version>
-		</dependency>
-
 		<!-- Test framework -->
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>

@@ -132,6 +132,7 @@ public class HorreumGlobalConfig extends GlobalConfiguration {
 	}
 
 	public static KeycloakAuthentication getKeycloakAuthentication(){
-    	return GlobalConfiguration.all().get(HorreumGlobalConfig.class).keycloak;
+		HorreumGlobalConfig globalConfig = GlobalConfiguration.all().get(HorreumGlobalConfig.class);
+		return globalConfig == null ? null : globalConfig.keycloak;
 	}
 }

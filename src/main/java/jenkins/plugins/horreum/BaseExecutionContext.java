@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.CloseProofOutputStream;
 import hudson.remoting.RemoteOutputStream;
 import io.hyperfoil.tools.HorreumClient;
@@ -42,6 +43,7 @@ public abstract class BaseExecutionContext<R> extends MasterToSlaveCallable<R, R
    }
 
    @Override
+   @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "Undeclared exception can be thrown from response.getEntity()")
    public R call() {
       HorreumClient client = createClient();
 
