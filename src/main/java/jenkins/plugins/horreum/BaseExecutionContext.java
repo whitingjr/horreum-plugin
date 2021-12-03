@@ -6,7 +6,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -46,32 +48,49 @@ public abstract class BaseExecutionContext<R> extends MasterToSlaveCallable<R, R
    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "Undeclared exception can be thrown from response.getEntity()")
    public R call() {
       HorreumClient client = createClient();
-
-      try {
-         return invoke(client);
-      } catch (Exception e) {
-         Throwable cause = e;
-         for (;;) {
-            if (cause instanceof WebApplicationException) {
-               Response response = ((WebApplicationException) cause).getResponse();
-               Object entity = null;
-               try {
-                  entity = response.getEntity();
-                  if (entity instanceof InputStream) {
-                     entity = toByteArrayOutputStream((InputStream) entity).toString(StandardCharsets.UTF_8.name());
+      List<Long> retries = HorreumGlobalConfig.get().retries();
+      RETRY: for (int retry = 0;; ++retry) {
+         try {
+            return invoke(client);
+         } catch (Exception e) {
+            Throwable cause = e;
+            for (; ; ) {
+               if (cause instanceof WebApplicationException) {
+                  Response response = ((WebApplicationException) cause).getResponse();
+                  Object entity = null;
+                  try {
+                     entity = response.getEntity();
+                     if (entity instanceof InputStream) {
+                        entity = toByteArrayOutputStream((InputStream) entity).toString(StandardCharsets.UTF_8.name());
+                     }
+                  } catch (Exception e2) {
+                     // ignore e.g. IllegalStateException: RESTEASY003765: Response is closed.
                   }
-               } catch (Exception e2) {
-                  // ignore e.g. IllegalStateException: RESTEASY003765: Response is closed.
+                  logger().printf("Request failed with status %d, message: %s%n", response.getStatus(), entity);
+               } else if (cause instanceof SocketException) {
+                  // these errors are usually temporary, let's try later
+                  if (retry < retries.size()) {
+                     logger().printf("Request failed with socket exception, retrying in %d seconds: %s%n", retries.get(retry), cause);
+                     try {
+                        Thread.sleep(retries.get(retry) * 1000);
+                        logger().println("Slept well, retrying now");
+                     } catch (InterruptedException ie) {
+                        logger().println("Interrupted waiting for another retry, retrying now!");
+                     }
+                     continue RETRY;
+                  } else {
+                     logger().printf("Request failed with socket exception and all retry attempts failed, aborting: %s", cause);
+                     throw e;
+                  }
                }
-               logger().printf("Request failed with status %d, message: %s", response.getStatus(), entity);
+               if (cause.getCause() != null && cause.getCause() != cause) {
+                  cause = cause.getCause();
+               } else {
+                  break;
+               }
             }
-            if (cause.getCause() != null && cause.getCause() != cause) {
-               cause = cause.getCause();
-            } else {
-               break;
-            }
+            throw e;
          }
-         throw e;
       }
    }
 

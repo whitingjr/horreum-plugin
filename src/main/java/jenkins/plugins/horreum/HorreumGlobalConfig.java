@@ -1,6 +1,11 @@
 package jenkins.plugins.horreum;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 import net.sf.json.JSONObject;
 
@@ -32,6 +37,7 @@ public class HorreumGlobalConfig extends GlobalConfiguration {
     private static final XStream2 XSTREAM2 = new XStream2();
 
 	 private String baseUrl;
+	 private List<Long> retries = LongStream.of(5, 10, 30, 60, 120).boxed().collect(Collectors.toList());
 	 private final KeycloakAuthentication keycloak = new KeycloakAuthentication();
 
     public HorreumGlobalConfig() {
@@ -134,5 +140,33 @@ public class HorreumGlobalConfig extends GlobalConfiguration {
 	public static KeycloakAuthentication getKeycloakAuthentication(){
 		HorreumGlobalConfig globalConfig = GlobalConfiguration.all().get(HorreumGlobalConfig.class);
 		return globalConfig == null ? null : globalConfig.keycloak;
+	}
+
+	public List<Long> retries() {
+		return this.retries;
+	}
+
+	public String getRetries() {
+    	return this.retries.stream().map(String::valueOf).collect(Collectors.joining(", "));
+	}
+
+	public void setRetries(String retries) {
+    	List<Long> list = new ArrayList<>();
+    	for (String part : retries.split(",")) {
+    		part = part.trim();
+    		if (part.endsWith("s")) {
+    			part = part.substring(0, part.length() - 1).trim();
+			}
+			try {
+				long delay = Long.parseLong(part);
+				if (delay <= 0) {
+					throw new IllegalArgumentException("Illegal delay value: " + delay);
+				}
+				list.add(delay);
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("Cannot parse '" + retries + "' into list of delays.");
+			}
+		}
+    	this.retries = Collections.unmodifiableList(list);
 	}
 }

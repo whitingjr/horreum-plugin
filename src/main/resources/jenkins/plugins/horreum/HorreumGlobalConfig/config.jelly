@@ -23,6 +23,11 @@
 				<f:textbox />
 			</f:entry>
         </f:entry>
+		<f:entry title="Retry delays">
+			<f:entry field="retries" title="Retries">
+				<f:textbox default="5, 10, 30, 60, 120"/>
+			</f:entry>
+		</f:entry>
         <f:entry title="Authentication Configuration">
 			<local:blockWrapper>
 
