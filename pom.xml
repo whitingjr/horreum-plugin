@@ -30,6 +30,7 @@ THE SOFTWARE.
 		<version>4.12</version>
 	</parent>
 
+	<groupId>io.hyperfoil.tools</groupId>
 	<artifactId>horreum-jenkins-plugin</artifactId>
 	<version>${revision}</version>
 	<packaging>hpi</packaging>
@@ -58,6 +59,7 @@ THE SOFTWARE.
 		<access-modifier.version>1.25</access-modifier.version>
 		<testcontainers.version>1.16.0</testcontainers.version>
 		<junit.jupiter.version>5.8.0</junit.jupiter.version>
+		<horreum.version>0.1</horreum.version>
 	</properties>
 
 	<repositories>
@@ -156,12 +158,12 @@ THE SOFTWARE.
 		<dependency>
 			<groupId>io.hyperfoil.tools</groupId>
 			<artifactId>horreum-client</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>${horreum.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.hyperfoil.tools</groupId>
 			<artifactId>horreum-client</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>${horreum.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
