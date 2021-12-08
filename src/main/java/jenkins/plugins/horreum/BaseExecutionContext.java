@@ -23,12 +23,15 @@ import jenkins.security.MasterToSlaveCallable;
 public abstract class BaseExecutionContext<R> extends MasterToSlaveCallable<R, RuntimeException> {
    protected final String url;
    protected final KeycloakAuthentication keycloak;
+   protected final List<Long> retries;
    protected final OutputStream remoteLogger;
    protected transient PrintStream localLogger;
 
    public BaseExecutionContext(String url, PrintStream logger) {
       this.url = url;
-      keycloak = HorreumGlobalConfig.get().getAuthentication();
+      HorreumGlobalConfig globalConfig = HorreumGlobalConfig.get();
+      keycloak = globalConfig.getAuthentication();
+      retries = globalConfig.retries();
       this.remoteLogger = new RemoteOutputStream(new CloseProofOutputStream(logger));
       this.localLogger = logger;
    }
@@ -48,7 +51,6 @@ public abstract class BaseExecutionContext<R> extends MasterToSlaveCallable<R, R
    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "Undeclared exception can be thrown from response.getEntity()")
    public R call() {
       HorreumClient client = createClient();
-      List<Long> retries = HorreumGlobalConfig.get().retries();
       RETRY: for (int retry = 0;; ++retry) {
          try {
             return invoke(client);
