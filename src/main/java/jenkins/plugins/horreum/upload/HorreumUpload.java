@@ -1,9 +1,7 @@
 package jenkins.plugins.horreum.upload;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nonnull;
 
@@ -21,12 +19,10 @@ import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Item;
-import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
@@ -44,8 +40,9 @@ public class HorreumUpload extends HorreumBaseBuilder<HorreumUploadConfig> {
 								@Nonnull String start,
 								@Nonnull String stop,
 								@NotNull String schema,
-								@Nonnull String jsonFile) {
-		super(new HorreumUploadConfig(test, owner, access, start, stop, schema, jsonFile));
+								@Nonnull String jsonFile,
+								boolean addBuildInfo) {
+		super(new HorreumUploadConfig(test, owner, access, start, stop, schema, jsonFile, addBuildInfo));
 	}
 
 	public String getTest() {
@@ -111,9 +108,18 @@ public class HorreumUpload extends HorreumBaseBuilder<HorreumUploadConfig> {
 		this.config.setJsonFile(jsonFile);
 	}
 
+	public boolean getAddBuildInfo() {
+		return config.getAddBuildInfo();
+	}
+
+	@DataBoundSetter
+	public void setAddBuildInfo(boolean add) {
+		config.setAddBuildInfo(add);
+	}
+
 	@Override
 	protected HorreumUploadExecutionContext createExecutionContext(AbstractBuild<?, ?> build, BuildListener listener, EnvVars envVars) {
-		return HorreumUploadExecutionContext.from(config, envVars,
+		return HorreumUploadExecutionContext.from(config, envVars, build,
 				listener, () -> this.config.resolveUploadFile(envVars, build));
 	}
 

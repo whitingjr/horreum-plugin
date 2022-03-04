@@ -26,7 +26,8 @@ public class HorreumUploadStepTest extends HorreumPluginTestBase {
             "access: 'PUBLIC',\n" +
             "start: '$.build-timestamp',\n" +
             "stop: '$.build-timestamp',\n" +
-            "jsonFile: '" + jsonResource.getPath() + "'\n" +
+            "jsonFile: '" + jsonResource.getPath() + "',\n" +
+            "addBuildInfo: true\n" +
             ")\n" +
             "println('Run ID: '+ id )\n" +
             "}\n",

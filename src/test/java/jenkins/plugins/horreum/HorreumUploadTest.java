@@ -25,7 +25,8 @@ public class HorreumUploadTest extends HorreumPluginTestBase {
 				"$.build-timestamp",
 				"$.build-timestamp",
 				"",
-				jsonResource.getPath()
+				jsonResource.getPath(),
+				true
 		);
 
 		// Run build

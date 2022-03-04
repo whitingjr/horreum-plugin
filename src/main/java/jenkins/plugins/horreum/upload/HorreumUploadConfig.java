@@ -22,8 +22,9 @@ public class HorreumUploadConfig extends HorreumBaseConfig {
 	private @Nonnull String stop;
 	private @Nonnull String schema;
 	private @Nonnull String jsonFile;
+	private boolean addBuildInfo;
 
-	public HorreumUploadConfig(String test, String owner, String access, String start, String stop, String schema, String jsonFile) {
+	public HorreumUploadConfig(String test, String owner, String access, String start, String stop, String schema, String jsonFile, boolean addBuildInfo) {
 		if (test == null || test.isEmpty()) {
 			throw new IllegalArgumentException("Test name (or ID) must be set.");
 		}
@@ -46,6 +47,7 @@ public class HorreumUploadConfig extends HorreumBaseConfig {
 		this.stop = Objects.requireNonNull(stop);
 		this.schema = Objects.requireNonNull(schema);
 		this.jsonFile = Objects.requireNonNull(jsonFile);
+		this.addBuildInfo = addBuildInfo;
 	}
 
 	@Nonnull
@@ -111,6 +113,15 @@ public class HorreumUploadConfig extends HorreumBaseConfig {
 		this.jsonFile = jsonFile;
 	}
 
+	public boolean getAddBuildInfo() {
+		return addBuildInfo;
+	}
+
+	public HorreumUploadConfig setAddBuildInfo(boolean addBuildInfo) {
+		this.addBuildInfo = addBuildInfo;
+		return this;
+	}
+
 	FilePath resolveUploadFile(EnvVars envVars, AbstractBuild<?,?> build) {
 		if (jsonFile.trim().isEmpty()) {
 			return null;
@@ -140,6 +151,7 @@ public class HorreumUploadConfig extends HorreumBaseConfig {
 		params.add(new HttpRequestNameValuePair("start",this.start));
 		params.add(new HttpRequestNameValuePair("stop",this.stop));
 		params.add(new HttpRequestNameValuePair("schema", this.schema));
+		params.add(new HttpRequestNameValuePair("addBuildInfo", String.valueOf(this.addBuildInfo)));
 		return params;
 	}
 }

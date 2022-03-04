@@ -2,12 +2,10 @@ package jenkins.plugins.horreum.upload;
 
 import java.io.IOException;
 
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
-import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepExecution;
-import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
+import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -15,15 +13,12 @@ import org.kohsuke.stapler.QueryParameter;
 
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.Launcher;
 import hudson.model.Item;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.remoting.VirtualChannel;
 import hudson.util.ListBoxModel;
 import jenkins.plugins.horreum.BaseExecutionContext;
 import jenkins.plugins.horreum.HorreumBaseStep;
-import jenkins.plugins.horreum.HorreumGlobalConfig;
 
 public final class HorreumUploadStep extends HorreumBaseStep<HorreumUploadConfig> {
 
@@ -34,9 +29,10 @@ public final class HorreumUploadStep extends HorreumBaseStep<HorreumUploadConfig
 									 String start,
 									 String stop,
 									 String schema,
-									 String jsonFile) {
+									 String jsonFile,
+									 boolean addBuildInfo) {
 
-		super(new HorreumUploadConfig(test, owner, access, start, stop, schema, jsonFile));
+		super(new HorreumUploadConfig(test, owner, access, start, stop, schema, jsonFile, addBuildInfo));
 	}
 
 	public String getTest() {
@@ -102,6 +98,15 @@ public final class HorreumUploadStep extends HorreumBaseStep<HorreumUploadConfig
 		this.config.setJsonFile(jsonFile);
 	}
 
+	public boolean getAddBuildInfo() {
+		return config.getAddBuildInfo();
+	}
+
+	@DataBoundSetter
+	public void setAddBuildInfo(boolean add) {
+		config.setAddBuildInfo(add);
+	}
+
 	@Override
 	public DescriptorImpl getDescriptor() {
 		return (DescriptorImpl) super.getDescriptor();
@@ -137,7 +142,8 @@ public final class HorreumUploadStep extends HorreumBaseStep<HorreumUploadConfig
 
 		@Override
 		protected BaseExecutionContext<String> createExecutionContext() throws Exception {
-			return HorreumUploadExecutionContext.from(step.config, null, getContext().get(TaskListener.class), this::resolveUploadFile);
+			StepContext context = getContext();
+			return HorreumUploadExecutionContext.from(step.config, null, context.get(Run.class), context.get(TaskListener.class), this::resolveUploadFile);
 		}
 
 		private static final long serialVersionUID = 1L;

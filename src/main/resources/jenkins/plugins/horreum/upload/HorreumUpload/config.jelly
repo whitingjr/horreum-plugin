@@ -27,4 +27,9 @@
     <f:entry field="jsonFile" title="JSON file path">
         <f:textbox />
     </f:entry>
+
+    <f:entry field="addBuildInfo" title="Add build info">
+        <f:checkbox />
+    </f:entry>
+
 </j:jelly>
