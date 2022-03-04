@@ -59,7 +59,7 @@ THE SOFTWARE.
 		<access-modifier.version>1.25</access-modifier.version>
 		<testcontainers.version>1.16.0</testcontainers.version>
 		<junit.jupiter.version>5.8.0</junit.jupiter.version>
-		<horreum.version>0.2-SNAPSHOT</horreum.version>
+		<horreum.version>0.3-SNAPSHOT</horreum.version>
 	</properties>
 
 	<repositories>
@@ -102,7 +102,7 @@ THE SOFTWARE.
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M4</version>
+				<version>3.0.0-M5</version>
 				<configuration>
 					<argLine>@{argLine} -Dfile.encoding=${project.build.sourceEncoding}</argLine>
 				</configuration>
