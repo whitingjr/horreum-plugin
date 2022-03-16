@@ -37,7 +37,7 @@ public class HorreumUploadStepTest extends HorreumPluginTestBase {
 
       j.assertBuildStatusSuccess(run);
 
-      RunService.TestRunsSummary summary = horreumClient.runService.testList(dummyTest.id, false, null, null, null, "", null);
+      RunService.TestRunsSummary summary = horreumClient.runService.listTestRuns(dummyTest.id, false, null, null, null, "", null);
       assertEquals(1, summary.total);
       assertEquals(1, summary.runs.size());
    }
