@@ -18,7 +18,7 @@ public class HorreumExpectTest extends HorreumPluginTestBase {
 		createOrLookupTest();
 
 		HorreumExpect horreumExpect = new HorreumExpect(
-				dummyTest.name, 60, "", "Jenkins CI", "$BUILD_URL"
+				dummyTest.name, 60, "Jenkins CI", "$BUILD_URL"
 		);
 
 		// Run build

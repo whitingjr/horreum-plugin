@@ -42,8 +42,7 @@ public class HorreumExpectExecutionContext extends BaseExecutionContext<Void> {
 
 	@Override
 	protected Void invoke(HorreumClient client) {
-		client.alertingService.expectRun(config.getTest(), config.getTimeout(), config.getTags(),
-				config.getExpectedBy(), backlink);
+		client.alertingService.expectRun(config.getTest(), config.getTimeout(), config.getExpectedBy(), backlink);
 		return null;
 	}
 }

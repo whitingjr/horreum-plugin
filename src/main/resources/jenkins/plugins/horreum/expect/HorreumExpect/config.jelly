@@ -8,10 +8,6 @@
         <f:number />
     </f:entry>
 
-    <f:entry field="tags" title="Tags">
-	     <f:textbox />
-	 </f:entry>
-
     <f:entry field="expectedBy" title="Expected by">
         <f:textbox />
     </f:entry>

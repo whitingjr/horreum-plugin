@@ -35,10 +35,9 @@ public class HorreumExpect extends HorreumBaseBuilder<HorreumExpectConfig> {
 	@DataBoundConstructor
 	public HorreumExpect(@Nonnull String test,
 								@Nonnull long timeout,
-								@Nonnull String tags,
 								@Nonnull String expectedBy,
 								@Nonnull String backlink) {
-		super(new HorreumExpectConfig(test, timeout, tags, expectedBy, backlink));
+		super(new HorreumExpectConfig(test, timeout, expectedBy, backlink));
 	}
 
 	public String getTest() {
@@ -57,15 +56,6 @@ public class HorreumExpect extends HorreumBaseBuilder<HorreumExpectConfig> {
 	@DataBoundSetter
 	public void setTimeout(long timeout) {
 		this.config.setTimeout(timeout);
-	}
-
-	public String getTags() {
-		return this.config.getTags();
-	}
-
-	@DataBoundSetter
-	public void setTags(String tags) {
-		this.config.setTags(tags);
 	}
 
 	public String getExpectedBy() {

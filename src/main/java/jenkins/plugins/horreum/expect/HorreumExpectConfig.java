@@ -11,14 +11,12 @@ public class HorreumExpectConfig extends HorreumBaseConfig {
 
 	private @Nonnull String test;
 	private long timeout;
-	private @Nonnull String tags;
 	private @Nonnull String expectedBy;
 	private @Nonnull String backlink; // = "$BUILD_URL"
 
-	public HorreumExpectConfig(String test, long timeout, String tags, String expectedBy, String backlink) {
+	public HorreumExpectConfig(String test, long timeout, String expectedBy, String backlink) {
 		this.test = Objects.requireNonNull(test);
 		this.timeout = timeout;
-		this.tags = orEmpty(tags);
 		this.expectedBy = orEmpty(expectedBy);
 		this.backlink = orEmpty(backlink);
 	}
@@ -38,15 +36,6 @@ public class HorreumExpectConfig extends HorreumBaseConfig {
 
 	public void setTimeout(long timeout) {
 		this.timeout = timeout;
-	}
-
-	@Nonnull
-	public String getTags() {
-		return tags;
-	}
-
-	public void setTags(@Nonnull String tags) {
-		this.tags = orEmpty(tags);
 	}
 
 	@Nonnull

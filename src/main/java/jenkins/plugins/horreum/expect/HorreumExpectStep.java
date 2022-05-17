@@ -1,26 +1,16 @@
 package jenkins.plugins.horreum.expect;
 
-import java.io.IOException;
-
-import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
-import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl;
-import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepExecution;
-import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 import hudson.Extension;
-import hudson.FilePath;
-import hudson.Launcher;
 import hudson.model.Item;
-import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.remoting.VirtualChannel;
 import hudson.util.ListBoxModel;
 import jenkins.plugins.horreum.BaseExecutionContext;
 import jenkins.plugins.horreum.HorreumBaseStep;
@@ -31,10 +21,9 @@ public final class HorreumExpectStep extends HorreumBaseStep<HorreumExpectConfig
 	@DataBoundConstructor
 	public HorreumExpectStep(String test,
 									 long timeout,
-									 String tags,
 									 String expectedBy,
 									 String backlink) {
-		super(new HorreumExpectConfig(test, timeout, tags, expectedBy, backlink));
+		super(new HorreumExpectConfig(test, timeout, expectedBy, backlink));
 
 		//Populate step config from Global state
 		HorreumGlobalConfig globalConfig = HorreumGlobalConfig.get();
@@ -59,15 +48,6 @@ public final class HorreumExpectStep extends HorreumBaseStep<HorreumExpectConfig
 	@DataBoundSetter
 	public void setTimeout(long timeout) {
 		this.config.setTimeout(timeout);
-	}
-
-	public String getTags() {
-		return this.config.getTags();
-	}
-
-	@DataBoundSetter
-	public void setTags(String tags) {
-		this.config.setTags(tags);
 	}
 
 	public String getExpectedBy() {

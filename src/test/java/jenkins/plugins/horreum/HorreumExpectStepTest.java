@@ -25,7 +25,6 @@ public class HorreumExpectStepTest extends HorreumPluginTestBase {
             "horreumExpect(\n" +
             "test: '" + dummyTest.name + "',\n" +
             "timeout: 60,\n" +
-            "tags: '',\n" +
             "expectedBy: 'Jenkins CI',\n" +
             "backlink: \"${env.BUILD_URL}\",\n" +
             ")\n" +
