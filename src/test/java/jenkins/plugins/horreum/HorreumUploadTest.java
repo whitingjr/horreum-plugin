@@ -37,7 +37,7 @@ public class HorreumUploadTest extends HorreumPluginTestBase {
 		// Check expectations
 		j.assertBuildStatusSuccess(build);
 
-		RunService.TestRunsSummary summary = horreumClient.runService.listTestRuns(dummyTest.id, false, null, null, "", null);
+		RunService.RunsSummary summary = horreumClient.runService.listTestRuns(dummyTest.id, false, null, null, "", null);
 		assertEquals(1, summary.total);
 		assertEquals(1, summary.runs.size());
 	}

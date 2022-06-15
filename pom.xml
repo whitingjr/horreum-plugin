@@ -27,7 +27,7 @@ THE SOFTWARE.
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>4.12</version>
+		<version>4.40</version>
 	</parent>
 
 	<groupId>io.jenkins.plugins</groupId>
@@ -50,21 +50,24 @@ THE SOFTWARE.
 
 	<properties>
 		<revision>0.1.5-SNAPSHOT</revision>
-		<jenkins.version>2.277.4</jenkins.version>
+		<jenkins.version>2.332.3</jenkins.version>
 		<java.level>11</java.level>
-		<hpi.compatibleSinceVersion>1.8.17</hpi.compatibleSinceVersion>
 		<forkCount>1C</forkCount>
 		<jackson.version>2.13.2</jackson.version>
 		<access-modifier.version>1.25</access-modifier.version>
 		<testcontainers.version>1.16.0</testcontainers.version>
 		<junit.jupiter.version>5.8.0</junit.jupiter.version>
-		<horreum.version>0.3</horreum.version>
+		<horreum.version>0.4</horreum.version>
 	</properties>
 
 	<repositories>
 		<repository>
 			<id>repo.jenkins-ci.org</id>
 			<url>https://repo.jenkins-ci.org/public/</url>
+		</repository>
+		<repository>
+			<id>jenkins-incremental</id>
+			<url>https://repo.jenkins-ci.org/incrementals/</url>
 		</repository>
 	</repositories>
 
@@ -84,15 +87,8 @@ THE SOFTWARE.
 					<source>${java.level}</source>
 					<target>8</target>
 					<release>8</release>
-					<testSource>${java.level.test}</testSource>
-					<testTarget>${java.level.test}</testTarget>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
-				<configuration>
+					<testSource>${java.level}</testSource>
+					<testTarget>${java.level}</testTarget>
 					<compilerArgs>
 						<compilerArg>-Xlint:all,-serial,-processing</compilerArg>
 					</compilerArgs>
@@ -101,10 +97,9 @@ THE SOFTWARE.
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M5</version>
 				<configuration>
 					<forkCount>1</forkCount> <!-- Parallel execution won't work well with fixed port offsets -->
-					<argLine>@{argLine} -Dfile.encoding=${project.build.sourceEncoding}</argLine>
+<!--					<argLine>@{argLine} -Dfile.encoding=${project.build.sourceEncoding}</argLine>-->
 				</configuration>
 			</plugin>
 			<plugin>
@@ -115,6 +110,10 @@ THE SOFTWARE.
 						<id>display-info</id>
 						<configuration>
 							<rules>
+								<!-- Override requirement for Maven 3.8.1 -->
+								<requireMavenVersion>
+									<version>3.6.3</version>
+								</requireMavenVersion>
 								<enforceBytecodeVersion>
 									<maxJdkVersion>${java.level}</maxJdkVersion>
 								</enforceBytecodeVersion>
@@ -126,6 +125,7 @@ THE SOFTWARE.
 			<plugin>
 				<groupId>org.jenkins-ci.tools</groupId>
 				<artifactId>maven-hpi-plugin</artifactId>
+				<version>${hpi-plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
 					<minimumJavaVersion>${java.level}</minimumJavaVersion>
@@ -145,16 +145,63 @@ THE SOFTWARE.
 		<dependencies>
 			<dependency>
 				<groupId>io.jenkins.tools.bom</groupId>
-				<artifactId>bom-2.204.x</artifactId>
-				<version>18</version>
+				<artifactId>bom-2.332.x</artifactId>
+				<version>1422.v0773c659e58f</version>
 				<scope>import</scope>
 				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-bom</artifactId>
+				<version>4.1.77.Final</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>2.11.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>1.7.36</version>
+			</dependency>
+			<dependency>
+				<groupId>io.smallrye.config</groupId>
+				<artifactId>smallrye-config</artifactId>
+				<version>2.9.2</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.jboss.logging</groupId>
+						<artifactId>jboss-logging</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>io.smallrye.common</groupId>
+				<artifactId>smallrye-common-annotation</artifactId>
+				<version>1.11.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.microprofile.config</groupId>
+				<artifactId>microprofile-config-api</artifactId>
+				<version>2.0.1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.microprofile.context-propagation</groupId>
+				<artifactId>microprofile-context-propagation-api</artifactId>
+				<version>1.3</version>
+			</dependency>
+			<dependency>
+				<groupId>io.vertx</groupId>
+				<artifactId>vertx-core</artifactId>
+				<version>4.2.7</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>io.hyperfoil.tools</groupId>
 			<artifactId>horreum-client</artifactId>
@@ -197,105 +244,7 @@ THE SOFTWARE.
 					<groupId>io.vertx</groupId>
 					<artifactId>vertx-core</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>io.netty</groupId>
-					<artifactId>netty-common</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>io.netty</groupId>
-					<artifactId>netty-buffer</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>io.netty</groupId>
-					<artifactId>netty-handler</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>io.netty</groupId>
-					<artifactId>netty-codec-http</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>io.netty</groupId>
-					<artifactId>netty-codec-http2</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>io.netty</groupId>
-					<artifactId>netty-transport</artifactId>
-				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.36</version>
-		</dependency>
-		<dependency>
-			<groupId>io.smallrye.config</groupId>
-			<artifactId>smallrye-config</artifactId>
-			<version>2.9.2</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.jboss.logging</groupId>
-					<artifactId>jboss-logging</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>io.smallrye.common</groupId>
-			<artifactId>smallrye-common-annotation</artifactId>
-			<version>1.11.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.microprofile.config</groupId>
-			<artifactId>microprofile-config-api</artifactId>
-			<version>2.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.microprofile.context-propagation</groupId>
-			<artifactId>microprofile-context-propagation-api</artifactId>
-			<version>1.3</version>
-		</dependency>
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-core</artifactId>
-			<version>4.2.7</version>
-		</dependency>
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-common</artifactId>
-			<version>4.1.74.Final</version>
-		</dependency>
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-buffer</artifactId>
-			<version>4.1.74.Final</version>
-		</dependency>
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-handler</artifactId>
-			<version>4.1.74.Final</version>
-		</dependency>
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-codec-http</artifactId>
-			<version>4.1.74.Final</version>
-		</dependency>
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-codec-http2</artifactId>
-			<version>4.1.74.Final</version>
-		</dependency>
-		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-transport</artifactId>
-			<version>4.1.74.Final</version>
-		</dependency>
-
-		<dependency>
-			<groupId>io.hyperfoil.tools</groupId>
-			<artifactId>horreum-client</artifactId>
-			<version>${horreum.version}</version>
-			<type>test-jar</type>
-			<scope>test</scope>
 		</dependency>
 
 		<dependency>
@@ -303,6 +252,12 @@ THE SOFTWARE.
 			<artifactId>jboss-logging</artifactId>
 			<version>3.4.3.Final</version>
 		</dependency>
+
+<!--		<dependency>-->
+<!--			<groupId>jakarta.annotation</groupId>-->
+<!--			<artifactId>jakarta.annotation-api</artifactId>-->
+<!--			<version>2.0.0</version>-->
+<!--		</dependency>-->
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -331,27 +286,8 @@ THE SOFTWARE.
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-compress</artifactId>
-			<version>1.20</version>
+			<version>1.21</version>
 		</dependency>
-
-<!--
-		<exclusions>
-			<exclusion>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-core</artifactId>
-			</exclusion>
-			<exclusion>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-compress</artifactId>
-			</exclusion>
-		</exclusions>
--->
-
-		<!-- end: resolve vserion conflicts -->
-<!--		<dependency>-->
-<!--			<groupId>org.jenkins-ci.plugins</groupId>-->
-<!--			<artifactId>apache-httpcomponents-client-4-api</artifactId>-->
-<!--		</dependency>-->
 
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
@@ -361,12 +297,7 @@ THE SOFTWARE.
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>plain-credentials</artifactId>
 		</dependency>
-<!--
-		<dependency>
-			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>script-security</artifactId>
-		</dependency>
--->
+
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-step-api</artifactId>
@@ -375,24 +306,36 @@ THE SOFTWARE.
 
 		<!-- Test framework -->
 		<dependency>
+			<groupId>io.hyperfoil.tools</groupId>
+			<artifactId>horreum-client</artifactId>
+			<version>${horreum.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-step-api</artifactId>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-basic-steps</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-cps</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-durable-task-step</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-job</artifactId>
@@ -413,28 +356,18 @@ THE SOFTWARE.
 			<scope>test</scope>
 		</dependency>
 
-
-		<!--
-				<dependency>
-					<groupId>org.jenkins-ci.plugins.workflow</groupId>
-					<artifactId>workflow-cps</artifactId>
-					<version>2.85</version>
-					<scope>compile</scope>
-				</dependency>
-		-->
 	</dependencies>
 
-<!--	<scm>-->
-<!--		<connection>scm:git:ssh://github.com/${gitHubRepo}.git</connection>-->
-<!--		<developerConnection>scm:git:ssh://git@github.com/${gitHubRepo}.git</developerConnection>-->
-<!--		<url>https://github.com/${gitHubRepo}</url>-->
-<!--		<tag>${scmTag}</tag>-->
-<!--	</scm>-->
 	<developers>
 		<developer>
-			<id>joahra</id>
+			<id>johara</id>
 			<name>John O'Hara</name>
 			<email>johara@redhat.com</email>
+		</developer>
+		<developer>
+			<id>rvansa</id>
+			<name>Radim Vansa</name>
+			<email>rvansa@redhat.com</email>
 		</developer>
 	</developers>
 </project>
