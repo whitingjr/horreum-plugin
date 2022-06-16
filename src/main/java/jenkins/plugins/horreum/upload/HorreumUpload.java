@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import org.antlr.v4.runtime.misc.NotNull;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -39,7 +38,7 @@ public class HorreumUpload extends HorreumBaseBuilder<HorreumUploadConfig> {
 								@Nonnull String access,
 								@Nonnull String start,
 								@Nonnull String stop,
-								@NotNull String schema,
+								@Nonnull String schema,
 								@Nonnull String jsonFile,
 								boolean addBuildInfo) {
 		super(new HorreumUploadConfig(test, owner, access, start, stop, schema, jsonFile, addBuildInfo));

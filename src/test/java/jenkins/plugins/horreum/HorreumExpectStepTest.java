@@ -1,24 +1,23 @@
 package jenkins.plugins.horreum;
 
+import static io.hyperfoil.tools.HorreumTestClientExtension.dummyTest;
+import static io.hyperfoil.tools.HorreumTestClientExtension.horreumClient;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.net.URL;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
 
-import io.hyperfoil.tools.horreum.api.RunService;
 import io.hyperfoil.tools.horreum.entity.alerting.RunExpectation;
 
 public class HorreumExpectStepTest extends HorreumPluginTestBase {
    @Test
-   public void testUpload() throws Exception {
-      createOrLookupTest();
-
+   public void testExpect() throws Exception {
       WorkflowJob proj = j.jenkins.createProject(WorkflowJob.class, "Horreum-Expect-Pipeline");
       proj.setDefinition(new CpsFlowDefinition(
             "node {\n" +
@@ -36,6 +35,7 @@ public class HorreumExpectStepTest extends HorreumPluginTestBase {
       j.assertBuildStatusSuccess(run);
 
       List<RunExpectation> expectations = horreumClient.alertingService.expectations();
+      expectations = expectations.stream().filter(e -> e.testId == dummyTest.id).collect(Collectors.toList());
       assertEquals(1, expectations.size());
       RunExpectation runExpectation = expectations.get(0);
       assertEquals("Jenkins CI", runExpectation.expectedBy);

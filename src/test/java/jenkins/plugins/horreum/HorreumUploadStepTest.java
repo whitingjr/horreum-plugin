@@ -1,5 +1,7 @@
 package jenkins.plugins.horreum;
 
+import static io.hyperfoil.tools.HorreumTestClientExtension.dummyTest;
+import static io.hyperfoil.tools.HorreumTestClientExtension.horreumClient;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URL;
@@ -14,8 +16,6 @@ import io.hyperfoil.tools.horreum.api.RunService;
 public class HorreumUploadStepTest extends HorreumPluginTestBase {
    @Test
    public void testUpload() throws Exception {
-      createOrLookupTest();
-
       URL jsonResource = Thread.currentThread().getContextClassLoader().getResource("data/config-quickstart.jvm.json");
       WorkflowJob proj = j.jenkins.createProject(WorkflowJob.class, "Horreum-Upload-Pipeline");
       proj.setDefinition(new CpsFlowDefinition(
@@ -29,7 +29,7 @@ public class HorreumUploadStepTest extends HorreumPluginTestBase {
             "jsonFile: '" + jsonResource.getPath() + "',\n" +
             "addBuildInfo: true\n" +
             ")\n" +
-            "println('Run ID: '+ id )\n" +
+            "println(id)\n" +
             "}\n",
             true));
 

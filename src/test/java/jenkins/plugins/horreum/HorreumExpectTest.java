@@ -1,9 +1,12 @@
 package jenkins.plugins.horreum;
 
+import static io.hyperfoil.tools.HorreumTestClientExtension.dummyTest;
+import static io.hyperfoil.tools.HorreumTestClientExtension.horreumClient;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,8 +18,6 @@ import jenkins.plugins.horreum.expect.HorreumExpect;
 public class HorreumExpectTest extends HorreumPluginTestBase {
 	@Test
 	public void testExpectRun() throws Exception {
-		createOrLookupTest();
-
 		HorreumExpect horreumExpect = new HorreumExpect(
 				dummyTest.name, 60, "Jenkins CI", "$BUILD_URL"
 		);
@@ -30,6 +31,7 @@ public class HorreumExpectTest extends HorreumPluginTestBase {
 		j.assertBuildStatusSuccess(build);
 
 		List<RunExpectation> expectations = horreumClient.alertingService.expectations();
+		expectations = expectations.stream().filter(e -> e.testId == dummyTest.id).collect(Collectors.toList());
 		assertEquals(1, expectations.size());
 		RunExpectation runExpectation = expectations.get(0);
 		assertEquals("Jenkins CI", runExpectation.expectedBy);

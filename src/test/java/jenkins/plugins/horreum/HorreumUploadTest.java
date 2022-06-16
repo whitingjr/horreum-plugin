@@ -1,5 +1,7 @@
 package jenkins.plugins.horreum;
 
+import static io.hyperfoil.tools.HorreumTestClientExtension.dummyTest;
+import static io.hyperfoil.tools.HorreumTestClientExtension.horreumClient;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URL;
@@ -14,7 +16,6 @@ import jenkins.plugins.horreum.upload.HorreumUpload;
 public class HorreumUploadTest extends HorreumPluginTestBase {
 	@Test
 	public void testUpload() throws Exception {
-		createOrLookupTest();
 		URL jsonResource = Thread.currentThread().getContextClassLoader().getResource("data/config-quickstart.jvm.json");
 
 		// Prepare HttpRequest#
