@@ -32,7 +32,7 @@ THE SOFTWARE.
 
 	<groupId>io.jenkins.plugins</groupId>
 	<artifactId>horreum</artifactId>
-	<version>${revision}</version>
+	<version>${revision}${changelist}</version>
 	<packaging>hpi</packaging>
 	<name>Horreum Plugin</name>
 	<description>
@@ -48,8 +48,19 @@ THE SOFTWARE.
 		</license>
 	</licenses>
 
+	<scm>
+		<connection>scm:git:https://github.com/${gitHubRepo}.git</connection>
+		<developerConnection>scm:git:https://github.com/${gitHubRepo}.git</developerConnection>
+		<tag>${scmTag}</tag>
+		<url>https://github.com/${gitHubRepo}</url>
+	</scm>
+
 	<properties>
-		<revision>0.1.5-SNAPSHOT</revision>
+		<revision>0.1.5</revision>
+		<changelist>-SNAPSHOT</changelist>
+		<scmTag>HEAD</scmTag>
+		<gitHubRepo>jenkinsci/horreum-plugin</gitHubRepo>
+
 		<jenkins.version>2.332.3</jenkins.version>
 		<java.level>11</java.level>
 		<forkCount>1C</forkCount>
@@ -125,7 +136,6 @@ THE SOFTWARE.
 			<plugin>
 				<groupId>org.jenkins-ci.tools</groupId>
 				<artifactId>maven-hpi-plugin</artifactId>
-				<version>${hpi-plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
 					<minimumJavaVersion>${java.level}</minimumJavaVersion>
