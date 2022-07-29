@@ -34,12 +34,13 @@ Example upload of `output.json` to Horreum instance
 [source,groovy]
 ----
 horreumUpload (
-    test: 'Dummy Test'
-    , owner: 'dev-team'
-    , access: 'PUBLIC'
-    , start: '$.build-timestamp'
-    , stop: '$.build-timestamp'
-    , jsonFile: 'run/localhost/output.json'
+    credentials: 'dev-ci',
+    test: 'Dummy Test',
+    owner: 'dev-team',
+    access: 'PUBLIC',
+    start: '$.build-timestamp',
+    stop: '$.build-timestamp',
+    jsonFile: 'run/localhost/output.json'
 )
 
 ----
@@ -49,14 +50,15 @@ You can access the response status code and content within a groovy script:
 [source,groovy]
 ----
 def response = horreumUpload (
-    test: 'Dummy Test'
-    , owner: 'dev-team'
-    , access: 'PUBLIC'
-    , start: '$.build-timestamp'
-    , stop: '$.build-timestamp'
-    , jsonFile: 'run/localhost/output.json'
-    , abortOnfailure: false
-    , quiet: false
+    credentials: 'dev-ci',
+    test: 'Dummy Test',
+    owner: 'dev-team',
+    access: 'PUBLIC',
+    start: '$.build-timestamp',
+    stop: '$.build-timestamp',
+    jsonFile: 'run/localhost/output.json',
+    abortOnfailure: false,
+    quiet: false
 )
 println("Status: "+response.status)
 println("Content: "+response.content)
@@ -64,11 +66,11 @@ println("Content: "+response.content)
 
 == Building
 
-The plugin can be built and tested locally using a Maven Docker container:
+The plugin can be built and tested locally using a Maven HPI:
 
 [source, bash]
 ----
-docker run -it --rm -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn test
+mvn hpi:run
 ----
 
 == Configure Global Settings
