@@ -1,6 +1,8 @@
 package jenkins.plugins.horreum.upload;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -102,7 +104,7 @@ public final class HorreumUploadStep extends HorreumBaseStep<HorreumUploadConfig
 	}
 
 	public String getFiles() {
-		return config.getJsonFile();
+		return config.getFiles();
 	}
 
 	@DataBoundSetter
