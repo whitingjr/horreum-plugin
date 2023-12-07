@@ -24,6 +24,8 @@ The following features are available in both Pipeline and traditional project ty
 
 * Upload JSON result object to Horruem
 * Supports Keycloak Authentication
+* Verify Experiment Profile name exists on a Test
+* Execute Horreum Experiment profile(s)
 
 === Basic plugin features
 
@@ -45,7 +47,7 @@ horreumUpload (
 
 ----
 
-You can access the response status code and content within a groovy script:
+You can access the response to capture the uploaded Run ID created by Horreum within a groovy script:
 
 [source,groovy]
 ----
@@ -60,8 +62,7 @@ def response = horreumUpload (
     abortOnfailure: false,
     quiet: false
 )
-println("Status: "+response.status)
-println("Content: "+response.content)
+println("Upload Id: "+response)
 ----
 
 == Building
