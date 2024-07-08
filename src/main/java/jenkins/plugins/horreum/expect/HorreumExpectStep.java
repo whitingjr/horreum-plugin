@@ -1,7 +1,6 @@
 package jenkins.plugins.horreum.expect;
 
-import javax.inject.Inject;
-
+import jakarta.inject.Inject;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;

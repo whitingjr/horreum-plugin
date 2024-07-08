@@ -5,9 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.extension.RegisterExtension;
+import io.hyperfoil.tools.HorreumClient;
+import io.hyperfoil.tools.horreum.api.data.Test;
+import io.hyperfoil.tools.horreum.api.services.ConfigService;
+import io.quarkus.test.junit.callback.*;
+import jakarta.inject.Inject;
 
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsScope;
@@ -15,16 +17,15 @@ import com.cloudbees.plugins.credentials.SystemCredentialsProvider;
 import com.cloudbees.plugins.credentials.domains.Domain;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 
-import io.hyperfoil.tools.HorreumTestClientExtension;
-import io.hyperfoil.tools.HorreumTestExtension;
+import static jenkins.plugins.horreum.HorreumIntegrationClient.instantiateClient;
 
-@ExtendWith(HorreumTestClientExtension.class)
-public class HorreumPluginTestBase {
+public class HorreumPluginTestBase implements QuarkusTestBeforeEachCallback, QuarkusTestAfterEachCallback, QuarkusTestAfterConstructCallback {
 	public static final String HORREUM_UPLOAD_CREDENTIALS = "horreum-creds";
 
-	@RegisterExtension
-	public JenkinsExtension j = new JenkinsExtension();
+	protected JenkinsResource j;
 	private Map<Domain, List<Credentials>> credentials;
+	protected HorreumClient horreumClient;
+	protected Test dummyTest;
 
 	void registerBasicCredential(String id, String username, String password) {
 		credentials.get(Domain.global()).add(
@@ -33,9 +34,8 @@ public class HorreumPluginTestBase {
 		SystemCredentialsProvider.getInstance().setDomainCredentialsMap(credentials);
 	}
 
-	@BeforeEach
-	public void init() {
-		credentials = new HashMap<>();
+	@Override
+	public void beforeEach(QuarkusTestMethodContext context) {
 		credentials.put(Domain.global(), new ArrayList<Credentials>());
 		this.registerBasicCredential(HORREUM_UPLOAD_CREDENTIALS, "user", "secret");
 
@@ -43,10 +43,34 @@ public class HorreumPluginTestBase {
 		if (globalConfig != null) {
 			globalConfig.setKeycloakRealm("horreum");
 			globalConfig.setClientId("horreum-ui");
-			globalConfig.setKeycloakBaseUrl(HorreumTestExtension.HORREUM_KEYCLOAK_BASE_URL);
-			globalConfig.setBaseUrl(HorreumTestExtension.HORREUM_BASE_URL);
+			globalConfig.setKeycloakBaseUrl(ConfigService.KEYCLOAK_BOOTSTRAP_URL);
+			globalConfig.setBaseUrl("http://localhost:8080/");
 		} else {
 			System.out.println("Can not find Horreum Global Config");
 		}
+		j.setTestDescription(
+			context.getTestInstance().getClass().getSimpleName(),
+			context.getTestMethod().getName()
+		);
+		try {
+			j.before();
+		} catch (Throwable throwable) {
+			throw new RuntimeException(throwable);
+		}
+
+	}
+
+	@Override
+	public void afterEach(QuarkusTestMethodContext context) {
+		credentials.clear();
+		j.afterEach(context);
+	}
+
+	@Override
+
+	public void afterConstruct(Object testInstance) {
+		credentials = new HashMap<>();
+		j = new JenkinsResource();
+		instantiateClient();
 	}
 }

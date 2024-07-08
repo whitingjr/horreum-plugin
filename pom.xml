@@ -27,7 +27,7 @@ THE SOFTWARE.
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>4.40</version>
+		<version>4.52</version> <!-- 2.361 jdk11 -->
 	</parent>
 
 	<groupId>io.jenkins.plugins</groupId>
@@ -61,24 +61,43 @@ THE SOFTWARE.
 		<scmTag>HEAD</scmTag>
 		<gitHubRepo>jenkinsci/horreum-plugin</gitHubRepo>
 
-		<jenkins.version>2.332.3</jenkins.version>
 		<forkCount>1C</forkCount>
 		<jackson.version>2.14.1</jackson.version>
 		<access-modifier.version>1.25</access-modifier.version>
 		<testcontainers.version>1.17.6</testcontainers.version>
 		<junit.jupiter.version>5.9.1</junit.jupiter.version>
-		<horreum.version>0.7</horreum.version>
+		<horreum.version>0.13.1</horreum.version>
+		<quarkus.version>3.10.2</quarkus.version>
+		<vertx.version>4.5.7</vertx.version>
+		<maven.compiler.target>17</maven.compiler.target>
+		<maven.compiler.source>11</maven.compiler.source>
+		<version.maven.compiler>3.13.0</version.maven.compiler>
+		<maven.resolver.version>1.9.18</maven.resolver.version>
+		<smallrye-config.version>3.7.1</smallrye-config.version>
+		<dev.images.postgres>postgres:16</dev.images.postgres>
+		<dev.images.keycloak>quay.io/keycloak/keycloak:23.0.3</dev.images.keycloak>
+		<surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
 	</properties>
 
 	<repositories>
 		<repository>
+			<id>central</id>
+			<url>https://repo1.maven.org/maven2/</url>
+		</repository>
+		<repository>
 			<id>repo.jenkins-ci.org</id>
+			<name>jenkins-public</name>
 			<url>https://repo.jenkins-ci.org/public/</url>
 		</repository>
 		<repository>
 			<id>jenkins-incremental</id>
 			<url>https://repo.jenkins-ci.org/incrementals/</url>
 		</repository>
+		<repository>
+			<id>jenkins-releases</id>
+			<url>https://repo.jenkins-ci.org/releases/</url>
+		</repository>
+
 	</repositories>
 
 	<pluginRepositories>
@@ -90,14 +109,22 @@ THE SOFTWARE.
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<forkCount>1</forkCount> <!-- Parallel execution won't work well with fixed port offsets -->
-					<reuseForks>true</reuseForks> <!-- This allows the containers to be created only once -->
-				</configuration>
-			</plugin>
+<!--			<plugin>-->
+<!--				<groupId>org.apache.maven.plugins</groupId>-->
+<!--				<artifactId>maven-surefire-plugin</artifactId>-->
+<!--				<version>${surefire-plugin.version}</version>-->
+<!--				<configuration>-->
+<!--					<systemPropertyVariables>-->
+<!--						<java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>-->
+<!--						<quarkus.native.builder-image>quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-11</quarkus.native.builder-image>-->
+<!--						<quarkus.execution-model-annotations.detection-mode>WARN</quarkus.execution-model-annotations.detection-mode>-->
+<!--						<dev.images.postgres>${dev.images.postgres}</dev.images.postgres>-->
+<!--						<dev.images.keycloak>${dev.images.keycloak}</dev.images.keycloak>-->
+<!--						<horreum.dev-services.postgres.image>${dev.images.postgres}</horreum.dev-services.postgres.image>-->
+<!--						<quarkus.http.test-port>8080</quarkus.http.test-port>-->
+<!--					</systemPropertyVariables>-->
+<!--				</configuration>-->
+<!--			</plugin>-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
@@ -110,7 +137,11 @@ THE SOFTWARE.
 								<requireMavenVersion>
 									<version>3.6.3</version>
 								</requireMavenVersion>
+								<enforceBytecodeVersion>
+									<maxJdkVersion>17</maxJdkVersion>
+								</enforceBytecodeVersion>
 							</rules>
+
 						</configuration>
 					</execution>
 				</executions>
@@ -123,33 +154,119 @@ THE SOFTWARE.
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>animal-sniffer-maven-plugin</artifactId>
+				<version>1.23</version>
 				<configuration>
 					<skip>true</skip>
 				</configuration>
 			</plugin>
+<!--			<plugin>-->
+<!--				<groupId>org.apache.maven.plugins</groupId>-->
+<!--				<artifactId>maven-shade-plugin</artifactId>-->
+<!--				<version>3.5.3</version>-->
+<!--				<configuration>-->
+<!--					<filters>-->
+<!--						<filter>-->
+<!--							<artifact>junit:junit</artifact>-->
+<!--							<includes>-->
+<!--								<include>junit/framework/**</include>-->
+<!--								<include>org/junit/**</include>-->
+<!--							</includes>-->
+<!--							<excludes>-->
+<!--								<exclude>org/junit/experimental/**</exclude>-->
+<!--								<exclude>org/junit/runners/**</exclude>-->
+<!--							</excludes>-->
+<!--						</filter>-->
+<!--						<filter>-->
+<!--							<artifact>*:*</artifact>-->
+<!--							<excludes>-->
+<!--								<exclude>META-INF/*.SF</exclude>-->
+<!--								<exclude>META-INF/*.DSA</exclude>-->
+<!--								<exclude>META-INF/*.RSA</exclude>-->
+<!--							</excludes>-->
+<!--						</filter>-->
+<!--					</filters>-->
+<!--				</configuration>-->
+<!--				<executions>-->
+<!--					<execution>-->
+<!--						<phase>package</phase>-->
+<!--						<goals>-->
+<!--							<goal>shade</goal>-->
+<!--						</goals>-->
+<!--					</execution>-->
+<!--				</executions>-->
+<!--			</plugin>-->
+
+			<plugin>
+				<groupId>io.quarkus</groupId>
+				<artifactId>quarkus-maven-plugin</artifactId>
+				<version>${quarkus.version}</version>
+				<extensions>true</extensions>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build</goal>
+							<goal>generate-code</goal>
+							<goal>generate-code-tests</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<systemProperties>
+						<horreum.dev-services.keycloak.image>${dev.images.keycloak}</horreum.dev-services.keycloak.image>
+						<horreum.dev-services.postgres.image>${dev.images.postgres}</horreum.dev-services.postgres.image>
+					</systemProperties>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${version.maven.compiler}</version>
+				<configuration>
+					<source>11</source>
+					<target>11</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>${surefire-plugin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+						<configuration>
+							<systemPropertyVariables>
+								<native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
+								<java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+								<maven.home>${maven.home}</maven.home>
+								<horreum.dev-services.keycloak.image>${dev.images.keycloak}</horreum.dev-services.keycloak.image>
+								<horreum.dev-services.postgres.image>${dev.images.postgres}</horreum.dev-services.postgres.image>
+							</systemPropertyVariables>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+				<filtering>false</filtering>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</testResource>
+		</testResources>
 	</build>
 
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>io.jenkins.tools.bom</groupId>
-				<artifactId>bom-2.332.x</artifactId>
-				<version>1422.v0773c659e58f</version>
-				<scope>import</scope>
-				<type>pom</type>
-			</dependency>
-			<dependency>
-				<groupId>io.netty</groupId>
-				<artifactId>netty-bom</artifactId>
-				<version>4.1.77.Final</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.11.0</version>
+				<version>2.16.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
@@ -157,25 +274,14 @@ THE SOFTWARE.
 				<version>1.7.36</version>
 			</dependency>
 			<dependency>
-				<groupId>io.smallrye.config</groupId>
-				<artifactId>smallrye-config</artifactId>
-				<version>2.10.0</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.jboss.logging</groupId>
-						<artifactId>jboss-logging</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
 				<groupId>io.smallrye.common</groupId>
 				<artifactId>smallrye-common-annotation</artifactId>
-				<version>1.11.0</version>
+				<version>2.3.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.microprofile.config</groupId>
 				<artifactId>microprofile-config-api</artifactId>
-				<version>2.0.1</version>
+				<version>3.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.microprofile.context-propagation</groupId>
@@ -185,17 +291,12 @@ THE SOFTWARE.
 			<dependency>
 				<groupId>io.vertx</groupId>
 				<artifactId>vertx-core</artifactId>
-				<version>4.2.7</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-compress</artifactId>
-				<version>1.22</version>
+				<version>${vertx.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpclient</artifactId>
-				<version>4.5.13</version>
+				<version>4.5.14</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
@@ -205,7 +306,7 @@ THE SOFTWARE.
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpcore</artifactId>
-				<version>4.4.15</version>
+				<version>4.4.16</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
@@ -215,7 +316,21 @@ THE SOFTWARE.
 			<dependency>
 				<groupId>org.jboss.logging</groupId>
 				<artifactId>jboss-logging</artifactId>
-				<version>3.4.3.Final</version>
+				<version>3.5.3.Final</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.osgi</groupId>
+						<artifactId>org.osgi.core</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-api</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.apache.logging.log4j</groupId>
+						<artifactId>log4j-api</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
@@ -226,159 +341,399 @@ THE SOFTWARE.
 	</dependencyManagement>
 
 	<dependencies>
+<!--		<dependency>-->
+<!--			<groupId>io.hyperfoil.tools</groupId>-->
+<!--			<artifactId>horreum-client</artifactId>-->
+<!--			<version>${horreum.version}</version>-->
+<!--			&lt;!&ndash; Quarkus 2.8.2 seems to have mixed dependencies &ndash;&gt;-->
+<!--			<exclusions>-->
+<!--				<exclusion>-->
+<!--					<groupId>org.slf4j</groupId>-->
+<!--					<artifactId>slf4j-api</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>org.jboss.logging</groupId>-->
+<!--					<artifactId>jboss-logging</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>com.fasterxml.jackson.core</groupId>-->
+<!--					<artifactId>jackson-core</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>com.fasterxml.jackson.core</groupId>-->
+<!--					<artifactId>jackson-databind</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>io.smallrye.config</groupId>-->
+<!--					<artifactId>smallrye-config</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>io.smallrye.common</groupId>-->
+<!--					<artifactId>smallrye-common-annotation</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>org.eclipse.microprofile.config</groupId>-->
+<!--					<artifactId>microprofile-config-api</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>org.eclipse.microprofile.context-propagation</groupId>-->
+<!--					<artifactId>microprofile-context-propagation-api</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>io.vertx</groupId>-->
+<!--					<artifactId>vertx-core</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>com.fasterxml.jackson.core</groupId>-->
+<!--					<artifactId>jackson-annotations</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>jakarta.annotation</groupId>-->
+<!--					<artifactId>jakarta.annotation-api</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>org.kohsuke.stapler</groupId>-->
+<!--					<artifactId>stapler</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>org.jboss.resteasy</groupId>-->
+<!--					<artifactId>resteasy-client</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>org.glassfish.jaxb</groupId>-->
+<!--					<artifactId>jaxb-runtime</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>org.jboss</groupId>-->
+<!--					<artifactId>jandex</artifactId>-->
+<!--				</exclusion>-->
+<!--			</exclusions>-->
+<!--		</dependency>-->
+
+		<!-- Test framework -->
 		<dependency>
-			<groupId>io.hyperfoil.tools</groupId>
-			<artifactId>horreum-client</artifactId>
-			<version>${horreum.version}</version>
-			<!-- Quarkus 2.8.2 seems to have mixed dependencies -->
+			<groupId>jakarta.ws.rs</groupId>
+			<artifactId>jakarta.ws.rs-api</artifactId>
+			<version>3.1.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<!-- https://updates.jenkins.io/download/plugins/ -->
+			<groupId>org.jenkins-ci.plugins.workflow</groupId>
+			<artifactId>workflow-step-api</artifactId>
+			<version>639.v6eca_cd8c04a_a_</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jenkins-ci.plugins.workflow</groupId>
+			<artifactId>workflow-basic-steps</artifactId>
+			<version>994.vd57e3ca_46d24</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.httpcomponents</groupId>
+					<artifactId>httpcore-nio</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jenkins-ci.plugins.workflow</groupId>
+			<artifactId>workflow-cps</artifactId>
+			<version>3536.vb_8a_6628079d5</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jenkins-ci.plugins</groupId>
+					<artifactId>script-security</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jenkins-ci.plugins.workflow</groupId>
+			<artifactId>workflow-job</artifactId>
+			<version>1239.v71b_b_a_124a_725</version>
+			<scope>test</scope>
+		</dependency>
+
+<!--		<dependency>-->
+<!--			<groupId>org.jboss.logging</groupId>-->
+<!--			<artifactId>jboss-logging</artifactId>-->
+<!--			<scope>test</scope>-->
+<!--			<exclusions>-->
+<!--				<exclusion>-->
+<!--					<groupId>org.jboss.logmanager</groupId>-->
+<!--					<artifactId>jboss-logmanager</artifactId>-->
+<!--				</exclusion>-->
+<!--			</exclusions>-->
+<!--		</dependency>-->
+
+<!--		<dependency>-->
+<!--			<groupId>io.hyperfoil.tools</groupId>-->
+<!--			<artifactId>horreum-api</artifactId>-->
+<!--			<version>${horreum.version}</version>-->
+<!--			<exclusions>-->
+<!--				<exclusion>-->
+<!--					<groupId>com.fasterxml.jackson.core</groupId>-->
+<!--					<artifactId>jackson-annotations</artifactId>-->
+<!--				</exclusion>-->
+<!--			</exclusions>-->
+<!--		</dependency>-->
+
+		<dependency>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-junit5</artifactId>
+			<version>${quarkus.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.platform</groupId>
+					<artifactId>junit-platform-launcher</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.junit.jupiter</groupId>
+					<artifactId>junit-jupiter</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.thoughtworks.xstream</groupId>
+					<artifactId>xstream</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>jakarta.annotation</groupId>
+					<artifactId>jakarta.annotation-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>jakarta.enterprise</groupId>
+					<artifactId>jakarta.enterprise.cdi-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.fusesource.jansi</groupId>
+					<artifactId>jansi</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.ow2.asm</groupId>
+					<artifactId>asm-util</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.ow2.asm</groupId>
+					<artifactId>asm-commons</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+<!--		<dependency>-->
+<!--			<groupId>org.jboss.logmanager</groupId>-->
+<!--			<artifactId>jboss-logmanager</artifactId>-->
+<!--			<version>3.0.6.Final</version>-->
+<!--			<exclusions>-->
+<!--				<exclusion>-->
+<!--					<groupId>io.smallrye.common</groupId>-->
+<!--					<artifactId>smallrye-common-constraint</artifactId>-->
+<!--				</exclusion>-->
+<!--				<exclusion>-->
+<!--					<groupId>org.jboss.logging</groupId>-->
+<!--					<artifactId>jboss-logging</artifactId>-->
+<!--				</exclusion>-->
+<!--			</exclusions>-->
+<!--		</dependency>-->
+
+		<dependency>
+			<groupId>org.apache.maven.resolver</groupId>
+			<artifactId>maven-resolver-impl</artifactId>
+			<version>${maven.resolver.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.resolver</groupId>
+			<artifactId>maven-resolver-connector-basic</artifactId>
+			<version>${maven.resolver.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.resolver</groupId>
+			<artifactId>maven-resolver-transport-wagon</artifactId>
+			<version>${maven.resolver.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-api</artifactId>
 				</exclusion>
 				<exclusion>
+					<groupId>org.codehaus.plexus</groupId>
+					<artifactId>plexus-utils</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.wagon</groupId>
+			<artifactId>wagon-http-shared</artifactId>
+			<version>3.5.3</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.codehaus.plexus</groupId>
+					<artifactId>plexus-utils</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>commons-codec</groupId>
+					<artifactId>commons-codec</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-bootstrap-maven-resolver</artifactId>
+			<version>${quarkus.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.codehaus.plexus</groupId>
+					<artifactId>plexus-cipher</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.google.inject</groupId>
+					<artifactId>guice</artifactId>
+				</exclusion>
+				<exclusion>
 					<groupId>org.jboss.logging</groupId>
 					<artifactId>jboss-logging</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-core</artifactId>
+					<groupId>org.jboss.slf4j</groupId>
+					<artifactId>slf4j-jboss-logmanager</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
+					<groupId>org.codehaus.plexus</groupId>
+					<artifactId>plexus-utils</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>io.smallrye.config</groupId>
-					<artifactId>smallrye-config</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>io.smallrye.common</groupId>
-					<artifactId>smallrye-common-annotation</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.eclipse.microprofile.config</groupId>
-					<artifactId>microprofile-config-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.eclipse.microprofile.context-propagation</groupId>
-					<artifactId>microprofile-context-propagation-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>io.vertx</groupId>
-					<artifactId>vertx-core</artifactId>
+					<groupId>commons-codec</groupId>
+					<artifactId>commons-codec</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
 
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>${jackson.version}</version>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-bootstrap-core</artifactId>
+			<version>${quarkus.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jboss.slf4j</groupId>
+					<artifactId>slf4j-jboss-logmanager</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-			<version>${jackson.version}</version>
+			<groupId>org.apache.maven.resolver</groupId>
+			<artifactId>maven-resolver-named-locks</artifactId>
+			<version>${maven.resolver.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.version}</version>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-test-oidc-server</artifactId>
+			<version>${quarkus.version}</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>io.vertx</groupId>
+					<artifactId>vertx-web-common</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.vertx</groupId>
+					<artifactId>vertx-auth-common</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-
 		<dependency>
-			<groupId>com.github.fge</groupId>
-			<artifactId>jackson-coreutils</artifactId>
-			<version>1.8</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-compress</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>credentials</artifactId>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-cipher</artifactId>
+			<version>2.1.0</version>
 		</dependency>
 		<dependency>
-			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>plain-credentials</artifactId>
+			<groupId>org.apache.maven.shared</groupId>
+			<artifactId>maven-shared-utils</artifactId>
+			<version>3.3.4</version>
 		</dependency>
-
 		<dependency>
-			<groupId>org.jenkins-ci.plugins.workflow</groupId>
-			<artifactId>workflow-step-api</artifactId>
-			<optional>true</optional>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-jdbc-postgresql</artifactId>
+			<version>${quarkus.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jboss.logging</groupId>
+					<artifactId>jboss-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-
-		<!-- Test framework -->
 		<dependency>
-			<groupId>io.hyperfoil.tools</groupId>
-			<artifactId>horreum-integration</artifactId>
-			<version>${horreum.version}</version>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>1.19.8</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.jenkins-ci.plugins</groupId>
+			<artifactId>credentials</artifactId>
+			<version>1087.1089.v2f1b_9a_b_040e4</version>
+		</dependency>
+		<dependency>
 			<groupId>io.hyperfoil.tools</groupId>
-			<artifactId>horreum-integration</artifactId>
+			<artifactId>horreum-integration-tests</artifactId>
 			<version>${horreum.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
-			<groupId>org.jenkins-ci.plugins.workflow</groupId>
-			<artifactId>workflow-step-api</artifactId>
-			<classifier>tests</classifier>
-			<scope>test</scope>
+			<groupId>io.hyperfoil.tools</groupId>
+			<artifactId>horreum-integration-tests</artifactId>
+			<version>${horreum.version}</version>
 		</dependency>
-
 		<dependency>
-			<groupId>org.jenkins-ci.plugins.workflow</groupId>
-			<artifactId>workflow-basic-steps</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jenkins-ci.plugins.workflow</groupId>
-			<artifactId>workflow-cps</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jenkins-ci.plugins.workflow</groupId>
-			<artifactId>workflow-durable-task-step</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jenkins-ci.plugins.workflow</groupId>
-			<artifactId>workflow-job</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<version>${junit.jupiter.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>testcontainers</artifactId>
-			<version>${testcontainers.version}</version>
+			<groupId>io.hyperfoil.tools</groupId>
+			<artifactId>horreum-api</artifactId>
+			<version>${horreum.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
 	<developers>
 		<developer>
 			<id>johara</id>
@@ -391,4 +746,5 @@ THE SOFTWARE.
 			<email>rvansa@redhat.com</email>
 		</developer>
 	</developers>
+
 </project>

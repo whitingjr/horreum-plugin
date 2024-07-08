@@ -2,9 +2,8 @@ package jenkins.plugins.horreum.expect;
 
 import java.util.Objects;
 
-import javax.annotation.Nonnull;
-
 import hudson.EnvVars;
+import jakarta.annotation.Nonnull;
 import jenkins.plugins.horreum.HorreumBaseConfig;
 
 public class HorreumExpectConfig extends HorreumBaseConfig {

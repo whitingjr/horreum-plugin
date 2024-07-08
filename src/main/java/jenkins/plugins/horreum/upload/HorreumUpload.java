@@ -1,7 +1,6 @@
 package jenkins.plugins.horreum.upload;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;

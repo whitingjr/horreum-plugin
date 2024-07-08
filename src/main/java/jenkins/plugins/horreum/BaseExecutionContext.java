@@ -11,8 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
@@ -143,9 +143,6 @@ public abstract class BaseExecutionContext<R> extends MasterToSlaveCallable<R, R
    protected HorreumClient createClient() {
       HorreumClient.Builder clientBuilder = new HorreumClient.Builder()
             .horreumUrl(url)
-            .keycloakUrl(keycloak.getBaseUrl())
-            .keycloakRealm(keycloak.getRealm())
-            .clientId(keycloak.getClientId())
             .horreumUser(usernameCredentials.getUsername())
             .horreumPassword(usernameCredentials.getPassword().getPlainText());
       return clientBuilder.build();

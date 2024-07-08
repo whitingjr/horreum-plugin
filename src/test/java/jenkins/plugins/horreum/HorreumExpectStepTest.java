@@ -1,29 +1,33 @@
 package jenkins.plugins.horreum;
 
-import static io.hyperfoil.tools.HorreumTestClientExtension.dummyTest;
-import static io.hyperfoil.tools.HorreumTestClientExtension.horreumClient;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.hyperfoil.tools.horreum.api.alerting.RunExpectation;
+
+import io.hyperfoil.tools.horreum.it.profile.InContainerProfile;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
+import io.quarkus.test.junit.TestProfile;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
-import io.hyperfoil.tools.horreum.entity.alerting.RunExpectation;
-
+@QuarkusIntegrationTest
+@TestProfile(InContainerProfile.class)
 public class HorreumExpectStepTest extends HorreumPluginTestBase {
    @Test
-   public void testExpect() throws Exception {
+   public void testExpect(TestInfo info) throws Exception {
       WorkflowJob proj = j.jenkins.createProject(WorkflowJob.class, "Horreum-Expect-Pipeline");
       proj.setDefinition(new CpsFlowDefinition(
             "node {\n" +
             "horreumExpect(\n" +
             "credentials: '" + HorreumPluginTestBase.HORREUM_UPLOAD_CREDENTIALS + "',\n" +
-            "test: '" + dummyTest.name + "',\n" +
+            "test: '" + info.getDisplayName() + "',\n" +
             "timeout: 60,\n" +
             "expectedBy: 'Jenkins CI',\n" +
             "backlink: \"${env.BUILD_URL}\",\n" +

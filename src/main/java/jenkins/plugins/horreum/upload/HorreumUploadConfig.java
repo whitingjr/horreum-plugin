@@ -5,11 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import javax.annotation.Nonnull;
-
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import jakarta.annotation.Nonnull;
 import jenkins.plugins.horreum.HorreumBaseConfig;
 import jenkins.plugins.horreum.util.HttpRequestNameValuePair;
 

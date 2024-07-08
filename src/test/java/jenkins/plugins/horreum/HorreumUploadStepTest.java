@@ -1,20 +1,22 @@
 package jenkins.plugins.horreum;
 
-import static io.hyperfoil.tools.HorreumTestClientExtension.dummyTest;
-import static io.hyperfoil.tools.HorreumTestClientExtension.horreumClient;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URL;
 import java.util.Map;
 
 import hudson.FilePath;
+import io.hyperfoil.tools.horreum.api.services.RunService;
+import io.hyperfoil.tools.horreum.it.profile.InContainerProfile;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
+import io.quarkus.test.junit.TestProfile;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
 
-import io.hyperfoil.tools.horreum.api.RunService;
-
+@QuarkusIntegrationTest
+@TestProfile(InContainerProfile.class)
 public class HorreumUploadStepTest extends HorreumPluginTestBase {
    @Test
    public void testUpload() throws Exception {
@@ -49,6 +51,8 @@ public class HorreumUploadStepTest extends HorreumPluginTestBase {
    public void testUploadMultiple() throws Exception {
       URL jsonResource1 = Thread.currentThread().getContextClassLoader().getResource("data/config-quickstart.jvm.json");
       URL jsonResource2 = Thread.currentThread().getContextClassLoader().getResource("data/another-file.json");
+      assertNotNull(j);
+      assertNotNull(j.jenkins);
       WorkflowJob proj = j.jenkins.createProject(WorkflowJob.class, "Horreum-Upload-Pipeline");
       FilePath folder = j.jenkins.getWorkspaceFor(proj).child("run");
       folder.child("config-quickstart.jvm.json").copyFrom(jsonResource1);

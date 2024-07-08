@@ -3,8 +3,7 @@ package jenkins.plugins.horreum;
 import java.io.Serializable;
 import java.util.Objects;
 
-import javax.annotation.Nonnull;
-
+import jakarta.annotation.Nonnull;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 
