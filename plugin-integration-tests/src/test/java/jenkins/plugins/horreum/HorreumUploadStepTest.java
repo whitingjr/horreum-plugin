@@ -1,9 +1,11 @@
 package jenkins.plugins.horreum;
 
+import static jenkins.plugins.horreum.HorreumIntegrationClient.getHorreumClient;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URL;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import hudson.FilePath;
 import io.hyperfoil.tools.horreum.api.services.RunService;
@@ -42,7 +44,7 @@ public class HorreumUploadStepTest extends HorreumPluginTestBase {
 
       j.assertBuildStatusSuccess(run);
 
-      RunService.RunsSummary summary = horreumClient.runService.listTestRuns(dummyTest.id, false, null, null, "", null);
+      RunService.RunsSummary summary = getHorreumClient().runService.listTestRuns(dummyTest.id, false, null, null, "", null);
       assertEquals(1, summary.total);
       assertEquals(1, summary.runs.size());
    }
@@ -52,6 +54,7 @@ public class HorreumUploadStepTest extends HorreumPluginTestBase {
       URL jsonResource1 = Thread.currentThread().getContextClassLoader().getResource("data/config-quickstart.jvm.json");
       URL jsonResource2 = Thread.currentThread().getContextClassLoader().getResource("data/another-file.json");
       assertNotNull(j);
+      LOGGER.info("logging j");
       assertNotNull(j.jenkins);
       WorkflowJob proj = j.jenkins.createProject(WorkflowJob.class, "Horreum-Upload-Pipeline");
       FilePath folder = j.jenkins.getWorkspaceFor(proj).child("run");
@@ -74,10 +77,10 @@ public class HorreumUploadStepTest extends HorreumPluginTestBase {
            true));
       WorkflowRun run = proj.scheduleBuild2(0).get();
       j.assertBuildStatusSuccess(run);
-      RunService.RunsSummary summary = horreumClient.runService.listTestRuns(dummyTest.id, false, null, null, "", null);
+      RunService.RunsSummary summary = getHorreumClient().runService.listTestRuns(dummyTest.id, false, null, null, "", null);
       assertEquals(1, summary.total);
       assertEquals(1, summary.runs.size());
-      Object runObject = horreumClient.runService.getRun(summary.runs.get(0).id,summary.runs.get(0).token);
+      Object runObject = getHorreumClient().runService.getRun(summary.runs.get(0).id,summary.runs.get(0).token);
       assertNotNull(runObject);
       assertTrue(runObject instanceof Map,"run should return a map");
       Object data = ((Map)runObject).get("data");
@@ -85,4 +88,6 @@ public class HorreumUploadStepTest extends HorreumPluginTestBase {
       assertTrue(data instanceof Map,"data should be a map");
       assertEquals(2,((Map<?, ?>) data).size(),"data should have an entry for each file");
    }
+
+   private static final Logger LOGGER = Logger.getLogger(HorreumUploadStepTest.class.getName());
 }

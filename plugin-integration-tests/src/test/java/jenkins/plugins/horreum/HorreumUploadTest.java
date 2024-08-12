@@ -1,5 +1,6 @@
 package jenkins.plugins.horreum;
 
+import static jenkins.plugins.horreum.HorreumIntegrationClient.getHorreumClient;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -83,7 +84,7 @@ public class HorreumUploadTest extends HorreumPluginTestBase {
 		schema.uri = uri;
 		schema.owner = dummyTest.owner;
 		schema.access = Access.PUBLIC;
-		horreumClient.schemaService.add(schema);
+		getHorreumClient().schemaService.add(schema);
 	}
 
 	private String readFile(String filename) throws IOException {
@@ -104,7 +105,7 @@ public class HorreumUploadTest extends HorreumPluginTestBase {
 		// Check expectations
 		j.assertBuildStatusSuccess(build);
 
-		RunService.RunsSummary summary = horreumClient.runService.listTestRuns(dummyTest.id, false, null, null, "", null);
+		RunService.RunsSummary summary = getHorreumClient().runService.listTestRuns(dummyTest.id, false, null, null, "", null);
 		assertEquals(1, summary.total);
 		assertEquals(1, summary.runs.size());
 		return summary.runs.get(0);

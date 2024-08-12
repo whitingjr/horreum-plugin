@@ -1,5 +1,6 @@
 package jenkins.plugins.horreum;
 
+import static jenkins.plugins.horreum.HorreumIntegrationClient.getHorreumClient;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -33,7 +34,7 @@ public class HorreumExpectTest extends HorreumPluginTestBase {
 		// Check expectations
 		j.assertBuildStatusSuccess(build);
 
-		List<RunExpectation> expectations = horreumClient.alertingService.expectations();
+		List<RunExpectation> expectations = getHorreumClient().alertingService.expectations();
 		expectations = expectations.stream().filter(e -> e.testId == dummyTest.id).collect(Collectors.toList());
 		assertEquals(1, expectations.size());
 		RunExpectation runExpectation = expectations.get(0);

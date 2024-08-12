@@ -105,6 +105,7 @@ public final class HorreumExpectStep extends HorreumBaseStep<HorreumExpectConfig
 		@Override
 		protected BaseExecutionContext<Void> createExecutionContext() throws Exception {
 			//TODO:: obtain reference to envVars
+			/* To get the contextual environment in a Step, you can inject EnvVars using @StepContextParameter;*/
 			return HorreumExpectExecutionContext.from(step.config, null, getContext().get(TaskListener.class));
 		}
 

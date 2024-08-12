@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import jakarta.inject.Inject;
+//import jakarta.inject.Inject;
+import javax.inject.Inject;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.kohsuke.stapler.AncestorInPath;
