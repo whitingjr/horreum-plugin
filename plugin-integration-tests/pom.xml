@@ -39,11 +39,13 @@ THE SOFTWARE.
 <!--        <quarkus.version>3.10.2</quarkus.version> using 3.10.2 causes Resteasy client api issues when being loaded by Quarkus ExtensionLoader -->
         <quarkus.version>3.8.4</quarkus.version>
         <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
+        <failsafe-plugin.version>3.3.1</failsafe-plugin.version>
         <dev.images.postgres>postgres:16</dev.images.postgres>
         <keycloak.version>23.0.7</keycloak.version>
         <dev.images.keycloak>quay.io/keycloak/keycloak:${keycloak.version}</dev.images.keycloak>
         <dev.images.native.builder-image>quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-11</dev.images.native.builder-image>
         <hpi-plugin.version>3.37</hpi-plugin.version>
+        <dev.images.horreum>quay.io/hyperfoil/horreum:${horreum.version}</dev.images.horreum>
     </properties>
 
     <build>
@@ -121,13 +123,13 @@ THE SOFTWARE.
                         <quarkus.execution-model-annotations.detection-mode>WARN</quarkus.execution-model-annotations.detection-mode>
                         <dev.images.postgres>${dev.images.postgres}</dev.images.postgres>
                         <dev.images.keycloak>${dev.images.keycloak}</dev.images.keycloak>
+                        <dev.images.horreum>${dev.images.horreum}</dev.images.horreum>
                         <horreum.dev-services.keycloak.image>${dev.images.keycloak}</horreum.dev-services.keycloak.image>
                         <horreum.dev-services.postgres.image>${dev.images.postgres}</horreum.dev-services.postgres.image>
+                        <horreum.dev-services.horreum.image>${dev.images.horreum}</horreum.dev-services.horreum.image>
                         <quarkus.http.test-port>8080</quarkus.http.test-port>
+                        <org.jenkinsci.maven.plugins.hpi.level>INFO</org.jenkinsci.maven.plugins.hpi.level>
                     </systemPropertyVariables>
-                    <classpathDependencyExcludes>
-                        <classpathDependencyExclude>io.hyperfoil.tools:horreum-integration-tests</classpathDependencyExclude>
-                    </classpathDependencyExcludes>
                     <argLine>
                         --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED
                     </argLine>
@@ -210,11 +212,9 @@ THE SOFTWARE.
                                     <mkdir dir="${project.build.outputDirectory}/test-classes"/>
                                     <mkdir dir="${project.build.outputDirectory}/test-classes/jobs"/>
                                     <mkdir dir="${project.build.outputDirectory}/test-classes/nodes"/>
-                                    <copy todir="${project.build.testOutputDirectory}" failonerror="false">
-                                        <fileset dir="${basedir}/../target/test-classes" includes="*"/>
-                                    </copy>
-                                    <copy todir="${project.build.outputDirectory}/" failonerror="false">
-                                        <fileset dir="${basedir}/../target/classes" includes="*"/>
+                                    <mkdir dir="${project.build.outputDirectory}/work"/>
+                                    <copy todir="${basedir}/work" failonerror="false">
+                                        <fileset dir="${basedir}/../work" includes="*"/>
                                     </copy>
                                 </target>
                             </configuration>

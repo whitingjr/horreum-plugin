@@ -50,9 +50,9 @@ public class HorreumPluginTestBase implements QuarkusTestBeforeEachCallback, Qua
 		credentials.get(Domain.global()).add(
 				new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,
 						id, "", username, password));
-//		SystemCredentialsProvider scp = SystemCredentialsProvider.getInstance();
-//		assertNotNull(scp);
-//		scp.setDomainCredentialsMap(credentials);
+		SystemCredentialsProvider scp = SystemCredentialsProvider.getInstance();
+		assertNotNull(scp);
+		scp.setDomainCredentialsMap(credentials);
 		//TODO: register credentials using the REST API
 		// https://jenkins.example.com/job/example-folder/credentials/store/folder/domain/testing/createCredentials
 //		ResteasyClientBuilder.newBuilder().
@@ -61,18 +61,6 @@ public class HorreumPluginTestBase implements QuarkusTestBeforeEachCallback, Qua
 	@Override
 	public void beforeEach(QuarkusTestMethodContext context) {
 
-		credentials.put(Domain.global(), new ArrayList<Credentials>());
-		this.registerBasicCredential(HORREUM_UPLOAD_CREDENTIALS, "user", "secret");
-
-//		HorreumGlobalConfig globalConfig = HorreumGlobalConfig.get();
-//		if (globalConfig != null) {
-//			globalConfig.setKeycloakRealm("horreum");
-//			globalConfig.setClientId("horreum-ui");
-//			globalConfig.setKeycloakBaseUrl(ConfigService.KEYCLOAK_BOOTSTRAP_URL);
-//			globalConfig.setBaseUrl("http://localhost:8080/");
-//		} else {
-//			System.out.println("Can not find Horreum Global Config");
-//		}
 		j.setTestDescription(
 			context.getTestInstance().getClass().getSimpleName(),
 			context.getTestMethod().getName()
@@ -85,6 +73,18 @@ public class HorreumPluginTestBase implements QuarkusTestBeforeEachCallback, Qua
 		} catch (Throwable throwable) {
 			throw new RuntimeException(throwable);
 		}
+		HorreumGlobalConfig globalConfig = HorreumGlobalConfig.get();
+		if (globalConfig != null) {
+			globalConfig.setKeycloakRealm("horreum");
+			globalConfig.setClientId("horreum-ui");
+			globalConfig.setKeycloakBaseUrl(ConfigService.KEYCLOAK_BOOTSTRAP_URL);
+			//TODO: set base url for horreum container
+			globalConfig.setBaseUrl("CHANGE_ME_HORREUM_BASE_URL");
+		} else {
+			System.out.println("Can not find Horreum Global Config");
+		}
+		credentials.put(Domain.global(), new ArrayList<Credentials>());
+		this.registerBasicCredential(HORREUM_UPLOAD_CREDENTIALS, "user", "secret");
 	}
 
 	@Override

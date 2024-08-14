@@ -1,6 +1,6 @@
 package io.hyperfoil.tools.horreum.it.profile;
 
-import io.hyperfoil.tools.horreum.it.ItResource;
+import io.hyperfoil.tools.horreum.it.JenkinsItResource;
 import io.quarkus.test.junit.QuarkusTestProfile;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public class InContainerProfile implements QuarkusTestProfile {
     @Override
     public List<TestResourceEntry> testResources() {
         return List.of(
-                new TestResourceEntry(ItResource.class)
+                new TestResourceEntry(JenkinsItResource.class)
         );
     }
 }
