@@ -130,6 +130,9 @@ THE SOFTWARE.
                         <quarkus.http.test-port>8080</quarkus.http.test-port>
                         <org.jenkinsci.maven.plugins.hpi.level>INFO</org.jenkinsci.maven.plugins.hpi.level>
                     </systemPropertyVariables>
+                    <classpathDependencyExcludes> <!-- necessary to avoid breaking Service Loader callbacks -->
+                        <classpathDependencyExclude>io.hyperfoil.tools:horreum-integration-tests</classpathDependencyExclude>
+                    </classpathDependencyExcludes>
                     <argLine>
                         --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED
                     </argLine>
