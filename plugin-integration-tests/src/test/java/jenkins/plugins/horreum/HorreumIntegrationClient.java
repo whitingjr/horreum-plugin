@@ -4,8 +4,7 @@ import io.hyperfoil.tools.HorreumClient;
 import io.hyperfoil.tools.horreum.api.data.Test;
 import org.junit.jupiter.api.Assertions;
 
-import java.util.List;
-import java.util.Map;
+import static io.hyperfoil.tools.horreum.it.Const.HORREUM_DEV_HORREUM_CONTAINER_PORT;
 
 public class HorreumIntegrationClient {
 
@@ -16,7 +15,7 @@ public class HorreumIntegrationClient {
     public static void instantiateClient() {
         if (horreumClient == null) {
             horreumClient = new HorreumClient.Builder()
-                    .horreumUrl("http://localhost:".concat(System.getProperty("quarkus.http.test-port")))
+                    .horreumUrl("http://localhost:".concat(System.getProperty(HORREUM_DEV_HORREUM_CONTAINER_PORT)))
                     .horreumUser("horreum.bootstrap")
                     .horreumPassword("secret")
                     .build();

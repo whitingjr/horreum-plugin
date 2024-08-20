@@ -33,21 +33,28 @@ public class ItResource implements QuarkusTestResourceLifecycleManager {
                     }
 
                     SelfSignedCert postgresSelfSignedCert = new SelfSignedCert("RSA", "SHA256withRSA", "localhost", 123);
-
-                    //todo: pick up from configuration
                     Map<String, String> containerArgs = Map.ofEntries(
-                            Map.entry(HORREUM_DEV_KEYCLOAK_ENABLED, "true"),
-                            Map.entry(HORREUM_DEV_KEYCLOAK_IMAGE, keycloakImage),
-                            Map.entry(HORREUM_DEV_KEYCLOAK_NETWORK_ALIAS, DEFAULT_KEYCLOAK_NETWORK_ALIAS),
-                            Map.entry(HORREUM_DEV_POSTGRES_ENABLED, "true"),
-                            Map.entry(HORREUM_DEV_POSTGRES_IMAGE, postgresImage),
-                            Map.entry(HORREUM_DEV_POSTGRES_NETWORK_ALIAS, DEFAULT_POSTGRES_NETWORK_ALIAS),
-                            Map.entry(HORREUM_DEV_POSTGRES_SSL_CERTIFICATE, postgresSelfSignedCert.getCertString()),
-                            Map.entry(HORREUM_DEV_POSTGRES_SSL_CERTIFICATE_KEY, postgresSelfSignedCert.getKeyString()),
-                            Map.entry(HORREUM_DEV_KEYCLOAK_DB_USERNAME, DEFAULT_KC_DB_USERNAME),
-                            Map.entry(HORREUM_DEV_KEYCLOAK_DB_PASSWORD, DEFAULT_KC_DB_PASSWORD),
-                            Map.entry(HORREUM_DEV_KEYCLOAK_ADMIN_USERNAME, DEFAULT_KC_ADMIN_USERNAME),
-                            Map.entry(HORREUM_DEV_KEYCLOAK_ADMIN_PASSWORD, DEFAULT_KC_ADMIN_PASSWORD)
+                        Map.entry(HORREUM_DEV_KEYCLOAK_ENABLED, "true"),
+                        Map.entry(HORREUM_DEV_KEYCLOAK_IMAGE, keycloakImage),
+                        Map.entry(HORREUM_DEV_KEYCLOAK_NETWORK_ALIAS, DEFAULT_KEYCLOAK_NETWORK_ALIAS),
+                        Map.entry(HORREUM_DEV_POSTGRES_ENABLED, "true"),
+                        Map.entry(HORREUM_DEV_POSTGRES_IMAGE, postgresImage),
+                        Map.entry(HORREUM_DEV_POSTGRES_NETWORK_ALIAS, DEFAULT_POSTGRES_NETWORK_ALIAS),
+                        Map.entry(HORREUM_DEV_POSTGRES_SSL_CERTIFICATE, postgresSelfSignedCert.getCertString()),
+                        Map.entry(HORREUM_DEV_POSTGRES_SSL_CERTIFICATE_KEY, postgresSelfSignedCert.getKeyString()),
+                        Map.entry(HORREUM_DEV_KEYCLOAK_DB_USERNAME, DEFAULT_KC_DB_USERNAME),
+                        Map.entry(HORREUM_DEV_KEYCLOAK_DB_PASSWORD, DEFAULT_KC_DB_PASSWORD),
+                        Map.entry(HORREUM_DEV_KEYCLOAK_ADMIN_USERNAME, DEFAULT_KC_ADMIN_USERNAME),
+                        Map.entry(HORREUM_DEV_KEYCLOAK_ADMIN_PASSWORD, DEFAULT_KC_ADMIN_PASSWORD),
+                        Map.entry("horreum.roles.provider", "keycloak"),
+                        Map.entry("quarkus.keycloak.admin-client.client-id", "horreum-client"),
+                        Map.entry("quarkus.keycloak.admin-client.realm", "horreum"),
+                        Map.entry("quarkus.keycloak.admin-client.client-secret", "secret"),
+                        Map.entry("quarkus.keycloak.admin-client.grant-type", "client_credentials"),
+                        Map.entry("keycloak.use.https", "false"),
+                        Map.entry("keycloak.service.client", "horreum-client"),
+                        Map.entry("keycloak.realm", "horreum"),
+                        Map.entry("keycloak.token.admin-roles", "admin,manager,tester,viewer,uploader")
                     );
                     return startContainers(containerArgs);
                 } catch (Exception e){

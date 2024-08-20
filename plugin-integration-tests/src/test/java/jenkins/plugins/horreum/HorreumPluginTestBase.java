@@ -1,42 +1,24 @@
 package jenkins.plugins.horreum;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import hudson.model.ItemGroup;
-import io.hyperfoil.tools.HorreumClient;
 import io.hyperfoil.tools.horreum.api.data.Test;
 import io.hyperfoil.tools.horreum.api.services.ConfigService;
 import io.quarkus.test.junit.callback.*;
-import jakarta.inject.Inject;
 
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.SystemCredentialsProvider;
 import com.cloudbees.plugins.credentials.domains.Domain;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
-import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
-import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.DefaultHandler;
-//import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-//import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import static jenkins.plugins.horreum.HorreumIntegrationClient.getHorreumClient;
 import static jenkins.plugins.horreum.HorreumIntegrationClient.instantiateClient;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static java.lang.System.getProperty;
+import static io.hyperfoil.tools.horreum.it.Const.HORREUM_DEV_HORREUM_CONTAINER_PORT;
 
 public class HorreumPluginTestBase implements QuarkusTestBeforeEachCallback, QuarkusTestAfterEachCallback, QuarkusTestAfterConstructCallback {
 	public static final String HORREUM_UPLOAD_CREDENTIALS = "horreum-creds";
@@ -78,8 +60,9 @@ public class HorreumPluginTestBase implements QuarkusTestBeforeEachCallback, Qua
 			globalConfig.setKeycloakRealm("horreum");
 			globalConfig.setClientId("horreum-ui");
 			globalConfig.setKeycloakBaseUrl(ConfigService.KEYCLOAK_BOOTSTRAP_URL);
-			//TODO: set base url for horreum container
-			globalConfig.setBaseUrl("CHANGE_ME_HORREUM_BASE_URL");
+			String port = getProperty(HORREUM_DEV_HORREUM_CONTAINER_PORT);
+			String baseUrl = String.format("http://localhost:%s", port);
+			globalConfig.setBaseUrl(baseUrl);
 		} else {
 			System.out.println("Can not find Horreum Global Config");
 		}

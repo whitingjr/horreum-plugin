@@ -68,7 +68,7 @@ THE SOFTWARE.
                     <systemProperties>
                         <horreum.dev-services.keycloak.image>${dev.images.keycloak}</horreum.dev-services.keycloak.image>
                         <horreum.dev-services.postgres.image>${dev.images.postgres}</horreum.dev-services.postgres.image>
-                        <platform.quarkus.native.builder-image>${dev.images.native.builder-image}</platform.quarkus.native.builder-image>
+                        <platform.quarkus.native.builder-image>quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-11</platform.quarkus.native.builder-image>
                         <quarkus.execution-model-annotations.detection-mode>WARN</quarkus.execution-model-annotations.detection-mode>
                     </systemProperties>
                 </configuration>
@@ -118,8 +118,8 @@ THE SOFTWARE.
                 <configuration>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                        <quarkus.native.builder-image>${dev.images.native.builder-image}</quarkus.native.builder-image>
-                        <platform.quarkus.native.builder-image>${dev.images.native.builder-image}</platform.quarkus.native.builder-image>
+                        <quarkus.native.builder-image>quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-11</quarkus.native.builder-image>
+                        <platform.quarkus.native.builder-image>quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-11</platform.quarkus.native.builder-image>
                         <quarkus.execution-model-annotations.detection-mode>WARN</quarkus.execution-model-annotations.detection-mode>
                         <dev.images.postgres>${dev.images.postgres}</dev.images.postgres>
                         <dev.images.keycloak>${dev.images.keycloak}</dev.images.keycloak>
@@ -129,14 +129,27 @@ THE SOFTWARE.
                         <horreum.dev-services.horreum.image>${dev.images.horreum}</horreum.dev-services.horreum.image>
                         <quarkus.http.test-port>8080</quarkus.http.test-port>
                         <org.jenkinsci.maven.plugins.hpi.level>INFO</org.jenkinsci.maven.plugins.hpi.level>
+                        <horreum.dev-services-horreum.image>${dev.images.horreum}</horreum.dev-services-horreum.image>
                     </systemPropertyVariables>
                     <classpathDependencyExcludes> <!-- necessary to avoid breaking Service Loader callbacks -->
-                        <classpathDependencyExclude>io.hyperfoil.tools:horreum-integration-tests</classpathDependencyExclude>
                     </classpathDependencyExcludes>
                     <argLine>
                         --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED
                     </argLine>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${failsafe-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -171,32 +184,6 @@ THE SOFTWARE.
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.jenkins-ci.tools</groupId>
-                <artifactId>maven-hpi-plugin</artifactId>
-                <version>3.37</version>
-                <extensions>true</extensions>
-                <executions>
-                    <execution>
-                        <id>start-jenkins</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <webPort>8080</webPort>
-                            <httpPort>8081</httpPort>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>stop-jenkins</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>stop</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -249,10 +236,6 @@ THE SOFTWARE.
                     <groupId>jakarta.annotation</groupId>
                     <artifactId>jakarta.annotation-api</artifactId>
                 </exclusion>
-<!--                <exclusion>-->
-<!--                    <groupId>jakarta.enterprise</groupId>-->
-<!--                    <artifactId>jakarta.enterprise.cdi-api</artifactId>-->
-<!--                </exclusion>-->
                 <exclusion>
                     <groupId>org.fusesource.jansi</groupId>
                     <artifactId>jansi</artifactId>
@@ -310,10 +293,6 @@ THE SOFTWARE.
                     <groupId>org.apache.httpcomponents</groupId>
                     <artifactId>httpcore-nio</artifactId>
                 </exclusion>
-<!--                <exclusion>-->
-<!--                    <groupId>org.jenkins-ci.plugins.workflow</groupId>-->
-<!--                    <artifactId>script-security</artifactId>-->
-<!--                </exclusion>-->
             </exclusions>
         </dependency>
 
@@ -362,10 +341,6 @@ THE SOFTWARE.
                     <groupId>org.kohsuke.stapler</groupId>
                     <artifactId>stapler-adjunct-timeline</artifactId>
                 </exclusion>
-<!--                <exclusion>-->
-<!--                    <groupId>org.kohsuke.stapler</groupId>-->
-<!--                    <artifactId>stapler-groovy</artifactId>-->
-<!--                </exclusion>-->
                 <exclusion>
                     <groupId>org.kohsuke.stapler</groupId>
                     <artifactId>stapler</artifactId>
@@ -493,12 +468,15 @@ THE SOFTWARE.
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>io.hyperfoil.tools</groupId>
-            <artifactId>horreum-integration-tests</artifactId>
-            <version>${horreum.version}</version>
-            <type>test-jar</type>
-        </dependency>
+        <!-- hmm, fat jars do not play well with service loader
+         https://github.com/quarkusio/quarkus/issues/15643
+         -->
+<!--        <dependency>-->
+<!--            <groupId>io.hyperfoil.tools</groupId>-->
+<!--            <artifactId>horreum-integration-tests</artifactId>-->
+<!--            <version>${horreum.version}</version>-->
+<!--            <type>test-jar</type>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.jenkins-ci.main</groupId>
@@ -527,26 +505,24 @@ THE SOFTWARE.
         </dependency>
 
         <dependency>
-            <groupId>io.hyperfoil.tools</groupId>
-            <artifactId>horreum-backend</artifactId>
-            <version>${horreum.version}</version>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-client</artifactId>
+            <version>3.8.4</version>
             <scope>test</scope>
-            <type>test-jar</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.quarkus</groupId>
-                    <artifactId>quarkus-smallrye-reactive-messaging-amqp</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.quarkus</groupId>
-                    <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.quarkus</groupId>
-                    <artifactId>quarkus-elasticsearch-rest-client</artifactId>
-                </exclusion>
+        </dependency>
 
-            </exclusions>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>1.19.6</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.5.4</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

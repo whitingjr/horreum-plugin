@@ -2,6 +2,7 @@ package io.hyperfoil.tools.horreum.it;
 
 import org.jboss.logging.Logger;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static io.hyperfoil.tools.horreum.it.JenkinsResources.*;
@@ -18,7 +19,14 @@ public class JenkinsItResource extends ItResource {
             try {
                 if (!horreumStarted) {
                     log.info("Starting Horreum resource");
+                    log.info("system properties contains postgres mapped port pre-check: " + System.getProperties().containsKey("postgres.container.port"));
+                    log.info("system properties contains keycloak mapped port pre-check: " + System.getProperties().containsKey("keycloak.container.port"));
                     containerArgs = super.start();
+                    if (containerArgs == null)
+                        containerArgs = new HashMap<>();
+                    log.info("system properties contains postgres mapped port post-check: " + System.getProperties().containsKey("postgres.container.port"));
+                    log.info("system properties contains keycloak mapped port post-check: " + System.getProperties().containsKey("keycloak.container.port"));
+
                     containerArgs.putAll(startHorreumContainer(containerArgs));
                     horreumStarted = true;
                 }
@@ -48,9 +56,5 @@ public class JenkinsItResource extends ItResource {
                 throw e;
             }
         }
-
     }
-
-
-
 }
