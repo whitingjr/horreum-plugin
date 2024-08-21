@@ -1,6 +1,8 @@
 package io.hyperfoil.tools.horreum.it;
 
+import io.hyperfoil.tools.horreum.infra.common.HorreumResources;
 import io.hyperfoil.tools.horreum.infra.common.ResourceLifecycleManager;
+import io.hyperfoil.tools.horreum.infra.common.resources.PostgresResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
@@ -11,9 +13,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-import static io.hyperfoil.tools.horreum.it.Const.HORREUM_DEV_HORREUM_CONTAINER_PORT;
-import static io.hyperfoil.tools.horreum.it.Const.HORREUM_DEV_HORREUM_IMAGE;
-import static io.hyperfoil.tools.horreum.infra.common.Const.*;
+import static io.hyperfoil.tools.horreum.it.Const.*;
 import static java.lang.System.getProperty;
 import static java.lang.System.setProperty;
 
@@ -23,6 +23,7 @@ public class HorreumProperResource implements ResourceLifecycleManager {
     private static GenericContainer<?> horreumContainer;
     private StringBuilder javaOptions = new StringBuilder();
     private StringBuilder format = new StringBuilder();
+    private static String IN_CONTAINER_IP = "172.17.0.1";
 
     private String networkAlias = "";
 
@@ -33,26 +34,38 @@ public class HorreumProperResource implements ResourceLifecycleManager {
 
         final String HORREUM_IMAGE = initArgs.get(HORREUM_DEV_HORREUM_IMAGE);
 
-        networkAlias = initArgs.get(HORREUM_DEV_KEYCLOAK_NETWORK_ALIAS);
+        networkAlias = initArgs.get(HORREUM_DEV_HORREUM_NETWORK_ALIAS);
+        Network network = HorreumResources.getNetwork();
 
         horreumContainer = (initArgs.containsKey(HORREUM_DEV_HORREUM_CONTAINER_PORT)) ?
             new FixedHostPortGenericContainer<>(HORREUM_IMAGE).withFixedExposedPort(Integer.parseInt(initArgs.get(HORREUM_DEV_HORREUM_CONTAINER_PORT)), 8080) :
             new GenericContainer<>(HORREUM_IMAGE).withExposedPorts(8080);
-        String keycloakUrl = String.format("%s/realms/horreum", getProperty("keycloak.host"));
+        String keycloakHost = initArgs.get("keycloak.host");
 
+        keycloakHost = keycloakHost.replace("localhost", networkAlias);
+        String keycloakUrl = String.format("%s/realms/horreum", keycloakHost);
+        String horreumUrl = "http://" + networkAlias + ":8081";
+        String jdbcUrl = initArgs.get("quarkus.datasource.jdbc.url");
+        jdbcUrl = jdbcUrl.replace("localhost", networkAlias);
+
+        prop("horreum.keycloak.url", keycloakHost);
         prop("quarkus.oidc.auth-server-url", keycloakUrl);
-        prop("quarkus.keycloak.admin-client.server-url", keycloakUrl);
+        prop("quarkus.keycloak.admin-client.server-url", keycloakHost);
         prop("quarkus.oidc.token.issuer", "https://server.example.com ");
         prop("smallrye.jwt.sign.key.location", "/privateKey.jwk");
-        prop("horreum.url", "http://localhost:8081");
+        prop("horreum.url", horreumUrl);
         prop("horreum.test-mode", "true");
         prop("horreum.privacy", "/path/to/privacy/statement/link");
         prop("quarkus.datasource.migration.devservices.enabled", "false");
-        prop("quarkus.datasource.migration.jdbc.url", getProperty("quarkus.datasource.migration.jdbc.url"));
+        prop("quarkus.datasource.jdbc.url", jdbcUrl);
+        prop("quarkus.datasource.migration.jdbc.url", jdbcUrl);
+        prop("quarkus.datasource.jdbc.additional-jdbc-properties.sslmode", "require");
         String javaOpts = String.format(" %s ", javaOptions.toString());
 
         horreumContainer
             .withEnv("JAVA_OPTIONS", javaOpts)
+            .withNetwork(network)
+            .withNetworkAliases(networkAlias)
             .withCommand("/deployments/horreum.sh ");
     }
 
@@ -81,7 +94,7 @@ public class HorreumProperResource implements ResourceLifecycleManager {
             "horreum.container.port", port.toString()
         );
         env.forEach(System::setProperty);
-        log.info(env.toString());
+//        log.info(env.toString());
         return env;
     }
 

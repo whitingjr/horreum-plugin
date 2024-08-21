@@ -9,6 +9,7 @@ import java.util.Map;
 import static io.hyperfoil.tools.horreum.infra.common.Const.*;
 import static io.hyperfoil.tools.horreum.infra.common.HorreumResources.startContainers;
 import static io.hyperfoil.tools.horreum.infra.common.HorreumResources.stopContainers;
+import static io.hyperfoil.tools.horreum.it.Const.*;
 import static java.lang.System.getProperty;
 
 public class ItResource implements QuarkusTestResourceLifecycleManager {
@@ -36,7 +37,7 @@ public class ItResource implements QuarkusTestResourceLifecycleManager {
                     Map<String, String> containerArgs = Map.ofEntries(
                         Map.entry(HORREUM_DEV_KEYCLOAK_ENABLED, "true"),
                         Map.entry(HORREUM_DEV_KEYCLOAK_IMAGE, keycloakImage),
-                        Map.entry(HORREUM_DEV_KEYCLOAK_NETWORK_ALIAS, DEFAULT_KEYCLOAK_NETWORK_ALIAS),
+                        Map.entry(HORREUM_DEV_KEYCLOAK_NETWORK_ALIAS, DEFAULT_HORREUM_NETWORK_ALIAS),
                         Map.entry(HORREUM_DEV_POSTGRES_ENABLED, "true"),
                         Map.entry(HORREUM_DEV_POSTGRES_IMAGE, postgresImage),
                         Map.entry(HORREUM_DEV_POSTGRES_NETWORK_ALIAS, DEFAULT_POSTGRES_NETWORK_ALIAS),
@@ -46,6 +47,7 @@ public class ItResource implements QuarkusTestResourceLifecycleManager {
                         Map.entry(HORREUM_DEV_KEYCLOAK_DB_PASSWORD, DEFAULT_KC_DB_PASSWORD),
                         Map.entry(HORREUM_DEV_KEYCLOAK_ADMIN_USERNAME, DEFAULT_KC_ADMIN_USERNAME),
                         Map.entry(HORREUM_DEV_KEYCLOAK_ADMIN_PASSWORD, DEFAULT_KC_ADMIN_PASSWORD),
+                        Map.entry(HORREUM_DEV_HORREUM_NETWORK_ALIAS, "172.17.0.1"),
                         Map.entry("horreum.roles.provider", "keycloak"),
                         Map.entry("quarkus.keycloak.admin-client.client-id", "horreum-client"),
                         Map.entry("quarkus.keycloak.admin-client.realm", "horreum"),
@@ -54,7 +56,8 @@ public class ItResource implements QuarkusTestResourceLifecycleManager {
                         Map.entry("keycloak.use.https", "false"),
                         Map.entry("keycloak.service.client", "horreum-client"),
                         Map.entry("keycloak.realm", "horreum"),
-                        Map.entry("keycloak.token.admin-roles", "admin,manager,tester,viewer,uploader")
+                        Map.entry("keycloak.token.admin-roles", "admin,manager,tester,viewer,uploader")/*,
+                        Map.entry("inContainer", "true")*/
                     );
                     return startContainers(containerArgs);
                 } catch (Exception e){
@@ -80,7 +83,4 @@ public class ItResource implements QuarkusTestResourceLifecycleManager {
         }
 
     }
-
-
-
 }

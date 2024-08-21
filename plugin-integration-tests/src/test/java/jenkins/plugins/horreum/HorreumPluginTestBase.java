@@ -61,7 +61,7 @@ public class HorreumPluginTestBase implements QuarkusTestBeforeEachCallback, Qua
 			globalConfig.setClientId("horreum-ui");
 			globalConfig.setKeycloakBaseUrl(ConfigService.KEYCLOAK_BOOTSTRAP_URL);
 			String port = getProperty(HORREUM_DEV_HORREUM_CONTAINER_PORT);
-			String baseUrl = String.format("http://localhost:%s", port);
+			String baseUrl = String.format("http://172.17.0.1:%s", port);
 			globalConfig.setBaseUrl(baseUrl);
 		} else {
 			System.out.println("Can not find Horreum Global Config");

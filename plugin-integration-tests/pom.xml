@@ -46,6 +46,7 @@ THE SOFTWARE.
         <dev.images.native.builder-image>quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-11</dev.images.native.builder-image>
         <hpi-plugin.version>3.37</hpi-plugin.version>
         <dev.images.horreum>quay.io/hyperfoil/horreum:${horreum.version}</dev.images.horreum>
+        <dev.images.amqp>quay.io/artemiscloud/activemq-artemis-broker:1.0.25</dev.images.amqp>
     </properties>
 
     <build>
