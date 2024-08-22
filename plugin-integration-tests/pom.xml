@@ -46,7 +46,7 @@ THE SOFTWARE.
         <dev.images.native.builder-image>quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-11</dev.images.native.builder-image>
         <hpi-plugin.version>3.37</hpi-plugin.version>
         <dev.images.horreum>quay.io/hyperfoil/horreum:${horreum.version}</dev.images.horreum>
-        <dev.images.amqp>quay.io/artemiscloud/activemq-artemis-broker:1.0.25</dev.images.amqp>
+        <dev.images.amqp>apache/activemq-artemis:2.37.0</dev.images.amqp>
     </properties>
 
     <build>
@@ -124,13 +124,10 @@ THE SOFTWARE.
                         <quarkus.execution-model-annotations.detection-mode>WARN</quarkus.execution-model-annotations.detection-mode>
                         <dev.images.postgres>${dev.images.postgres}</dev.images.postgres>
                         <dev.images.keycloak>${dev.images.keycloak}</dev.images.keycloak>
+                        <dev.images.amqp>${dev.images.amqp}</dev.images.amqp>
                         <dev.images.horreum>${dev.images.horreum}</dev.images.horreum>
-                        <horreum.dev-services.keycloak.image>${dev.images.keycloak}</horreum.dev-services.keycloak.image>
-                        <horreum.dev-services.postgres.image>${dev.images.postgres}</horreum.dev-services.postgres.image>
-                        <horreum.dev-services.horreum.image>${dev.images.horreum}</horreum.dev-services.horreum.image>
                         <quarkus.http.test-port>8080</quarkus.http.test-port>
                         <org.jenkinsci.maven.plugins.hpi.level>INFO</org.jenkinsci.maven.plugins.hpi.level>
-                        <horreum.dev-services-horreum.image>${dev.images.horreum}</horreum.dev-services-horreum.image>
                     </systemPropertyVariables>
                     <classpathDependencyExcludes> <!-- necessary to avoid breaking Service Loader callbacks -->
                     </classpathDependencyExcludes>

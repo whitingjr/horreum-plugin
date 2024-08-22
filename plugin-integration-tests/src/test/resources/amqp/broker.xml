@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration xmlns="urn:activemq"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="urn:activemq /schema/artemis-configuration.xsd">
+   <core xmlns="urn:activemq:core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="urn:activemq:core ">
+      <acceptors>
+         <acceptor name="artemis">tcp://0.0.0.0:5672</acceptor>
+      </acceptors>
+      <!-- addresses -->
+      <addresses>
+        <address name="dataset-event-in">
+          <anycast>
+            <queue name="dataset-event-in"/>
+          </anycast>
+        </address>
+        <address name="dataset-event-out">
+          <anycast>
+            <queue name="dataset-event-out"/>
+          </anycast>
+        </address>
+        <address name="run-recalc-in">
+          <anycast>
+            <queue name="run-recalc-in"/>
+          </anycast>
+        </address>
+        <address name="run-recalc-out">
+          <anycast>
+            <queue name="run-recalc-out"/>
+          </anycast>
+        </address>
+        <address name="schema-sync-in">
+          <anycast>
+            <queue name="schema-sync-in"/>
+          </anycast>
+        </address>
+        <address name="schema-sync-out">
+          <anycast>
+            <queue name="schema-sync-out"/>
+          </anycast>
+        </address>
+      </addresses>
+  </core>
+</configuration>

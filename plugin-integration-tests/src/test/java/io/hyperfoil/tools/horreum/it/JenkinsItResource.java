@@ -22,7 +22,7 @@ public class JenkinsItResource extends ItResource {
                     containerArgs = super.start();
                     if (containerArgs == null)
                         containerArgs = new HashMap<>();
-
+                    containerArgs.putAll(startAMQPContainer(containerArgs));
                     containerArgs.putAll(startHorreumContainer(containerArgs));
                     horreumStarted = true;
                 }
@@ -44,8 +44,12 @@ public class JenkinsItResource extends ItResource {
             try {
                 log.info("Stopping Horreum IT resources");
                 super.stop();
+                stopContainers();
                 horreumStarted = false;
             } catch (RuntimeException e) {
+                if (amqpResource != null) {
+                    stopAMQPContainer();
+                }
                 if (horreumResource != null) {
                     stopHorreumContainer();
                 }

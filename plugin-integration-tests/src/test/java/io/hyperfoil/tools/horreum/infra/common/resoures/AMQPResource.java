@@ -4,22 +4,38 @@ import io.hyperfoil.tools.horreum.infra.common.ResourceLifecycleManager;
 import org.jboss.logging.Logger;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.utility.MountableFile;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+import static io.hyperfoil.tools.horreum.it.Const.*;
+
 public class AMQPResource implements ResourceLifecycleManager {
     private static final Logger log = Logger.getLogger(AMQPResource.class);
     public static final String AMQP_CONFIG_PROPERTIES = "amqp.config.properties";
     private GenericContainer<?> amqpContainer;
-
+    private boolean inContainer = false;
     private String networkAlias = "";
 
     @Override
     public void init(Map<String, String> initArgs) {
         ResourceLifecycleManager.super.init(initArgs);
+        if (initArgs.containsKey(HORREUM_DEV_AMQP_ENABLED) && initArgs.get(HORREUM_DEV_AMQP_ENABLED).equals("true")) {
+            if (!initArgs.containsKey(HORREUM_DEV_AMQP_IMAGE)) {
+                throw new RuntimeException("Arguments did not contain AMQP image.");
+            }
+            final String AMQP_IMAGE = initArgs.get(HORREUM_DEV_AMQP_IMAGE);
+            inContainer = initArgs.containsKey("inContainer") && initArgs.get("inContainer").equals("true");
+            networkAlias = initArgs.get(HORREUM_DEV_AMQP_NETWORK_ALIAS);
 
+            amqpContainer = new GenericContainer<>(AMQP_IMAGE);
+            amqpContainer.withEnv("ARTEMIS_USER", initArgs.get("amqp-username"))
+                .withEnv("ARTEMIS_PASSWORD", initArgs.get("amqp-password"))
+                .withExposedPorts(5672)
+                .withCopyFileToContainer(MountableFile.forClasspathResource("amqp/broker.xml"), "/var/lib/artemis-instance/etc-override/broker.xml");
+        }
     }
 
     @Override
@@ -33,8 +49,10 @@ public class AMQPResource implements ResourceLifecycleManager {
         }
         amqpContainer.start();
         String mappedPort = amqpContainer.getMappedPort(5672).toString();
+        String host = inContainer ? IN_CONTAINER_IP : "localhost";
 
-        return Map.of("amqp.mapped.port", mappedPort);
+        return Map.of("amqp.mapped.port", mappedPort,
+            "amqp.host", host);
     }
 
     @Override

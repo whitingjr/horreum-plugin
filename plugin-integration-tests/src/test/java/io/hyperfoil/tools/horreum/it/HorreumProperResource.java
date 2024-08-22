@@ -2,9 +2,6 @@ package io.hyperfoil.tools.horreum.it;
 
 import io.hyperfoil.tools.horreum.infra.common.HorreumResources;
 import io.hyperfoil.tools.horreum.infra.common.ResourceLifecycleManager;
-import io.hyperfoil.tools.horreum.infra.common.resources.PostgresResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
@@ -14,16 +11,12 @@ import java.util.Map;
 import java.util.Optional;
 
 import static io.hyperfoil.tools.horreum.it.Const.*;
-import static java.lang.System.getProperty;
 import static java.lang.System.setProperty;
 
 public class HorreumProperResource implements ResourceLifecycleManager {
 
-    private static final Logger log = LoggerFactory.getLogger(HorreumProperResource.class);
     private static GenericContainer<?> horreumContainer;
     private StringBuilder javaOptions = new StringBuilder();
-    private StringBuilder format = new StringBuilder();
-    private static String IN_CONTAINER_IP = "172.17.0.1";
 
     private String networkAlias = "";
 
@@ -60,7 +53,13 @@ public class HorreumProperResource implements ResourceLifecycleManager {
         prop("quarkus.datasource.jdbc.url", jdbcUrl);
         prop("quarkus.datasource.migration.jdbc.url", jdbcUrl);
         prop("quarkus.datasource.jdbc.additional-jdbc-properties.sslmode", "require");
-        String javaOpts = String.format(" %s ", javaOptions.toString());
+        prop("amqp-host", initArgs.get("amqp.host"));
+        prop("amqp-port", initArgs.get("amqp.mapped.port"));
+        prop("amqp-username", initArgs.get("amqp-username"));
+        prop("amqp-password", initArgs.get("amqp-password"));
+        prop("amqp-reconnect-attempts" , "100");
+        prop("amqp-reconnect-interval", "1000");
+        String javaOpts = javaOptions.toString();
 
         horreumContainer
             .withEnv("JAVA_OPTIONS", javaOpts)
@@ -71,7 +70,6 @@ public class HorreumProperResource implements ResourceLifecycleManager {
 
     private void prop(String key, String value) {
         javaOptions.append(" -D").append(key).append("=").append(value).append(" ");
-        format.append(" %s ");
     }
 
     @Override
@@ -90,12 +88,9 @@ public class HorreumProperResource implements ResourceLifecycleManager {
 
         setProperty(HORREUM_DEV_HORREUM_CONTAINER_PORT, port.toString());
 
-        Map<String,String> env = Map.of("horreum.container.name", horreumContainerName,
+        return Map.of("horreum.container.name", horreumContainerName,
             "horreum.container.port", port.toString()
         );
-        env.forEach(System::setProperty);
-//        log.info(env.toString());
-        return env;
     }
 
     @Override
