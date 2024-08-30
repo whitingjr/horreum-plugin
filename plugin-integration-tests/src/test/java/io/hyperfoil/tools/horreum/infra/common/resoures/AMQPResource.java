@@ -1,7 +1,6 @@
 package io.hyperfoil.tools.horreum.infra.common.resoures;
 
 import io.hyperfoil.tools.horreum.infra.common.ResourceLifecycleManager;
-import org.jboss.logging.Logger;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.MountableFile;
@@ -13,8 +12,6 @@ import java.util.Optional;
 import static io.hyperfoil.tools.horreum.it.Const.*;
 
 public class AMQPResource implements ResourceLifecycleManager {
-    private static final Logger log = Logger.getLogger(AMQPResource.class);
-    public static final String AMQP_CONFIG_PROPERTIES = "amqp.config.properties";
     private GenericContainer<?> amqpContainer;
     private boolean inContainer = false;
     private String networkAlias = "";
@@ -33,6 +30,8 @@ public class AMQPResource implements ResourceLifecycleManager {
             amqpContainer = new GenericContainer<>(AMQP_IMAGE);
             amqpContainer.withEnv("ARTEMIS_USER", initArgs.get("amqp-username"))
                 .withEnv("ARTEMIS_PASSWORD", initArgs.get("amqp-password"))
+                .withEnv("AMQ_ROLE", "admin")
+                .withEnv("EXTRA_ARGS", " --role admin --name broker --allow-anonymous --force --no-autotune --mapped --no-fsync  --relax-jolokia ")
                 .withExposedPorts(5672)
                 .withCopyFileToContainer(MountableFile.forClasspathResource("amqp/broker.xml"), "/var/lib/artemis-instance/etc-override/broker.xml");
         }

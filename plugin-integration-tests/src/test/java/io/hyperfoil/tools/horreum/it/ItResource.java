@@ -65,7 +65,8 @@ public class ItResource implements QuarkusTestResourceLifecycleManager {
                         Map.entry(HORREUM_DEV_AMQP_NETWORK_ALIAS, DEFAULT_AMQP_NETWORK_ALIAS),
                         Map.entry("amqp-username", DEFAULT_AMQP_USERNAME),
                         Map.entry("amqp-password", DEFAULT_AMQP_PASSWORD),
-                        Map.entry("inContainer", "true")
+                        Map.entry("inContainer", "true"),
+                        Map.entry("quarkus.http.host", "172.17.0.1")
                     );
                     return startContainers(containerArgs);
                 } catch (Exception e){
