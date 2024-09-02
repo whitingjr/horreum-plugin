@@ -31,6 +31,7 @@ public class JenkinsItResource extends ItResource {
                 if (horreumStarted) {
                     log.info("Stopping Horreum resource");
                     stopHorreumContainer();
+                    stopAMQPContainer();
                 }
                 throw new RuntimeException("Could not start Jenkins services", e);
             }

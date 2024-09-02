@@ -44,6 +44,10 @@ public class HorreumProperResource implements ResourceLifecycleManager {
         prop("horreum.keycloak.url", keycloakHost);
         prop("quarkus.oidc.auth-server-url", keycloakUrl);
         prop("quarkus.keycloak.admin-client.server-url", keycloakHost);
+        prop("quarkus.keycloak.admin-client.client-id", "horreum");
+        prop("quarkus.keycloak.admin-client.realm", "horreum");
+        prop("quarkus.keycloak.admin-client.client-secret", "**********");
+        prop("quarkus.keycloak.admin-client.grant-type", "CLIENT_CREDENTIALS");
         prop("quarkus.oidc.token.issuer", "https://server.example.com ");
         prop("smallrye.jwt.sign.key.location", "/privateKey.jwk");
         prop("horreum.url", horreumUrl);

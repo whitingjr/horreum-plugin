@@ -251,6 +251,21 @@ You can verify the network health of a particular NIC by specifying the <network
           <queue name="run-recalc-in" />
         </anycast>
       </address>
+      <address name="run-recalc-out">
+        <anycast>
+          <queue name="run-recalc-out" />
+        </anycast>
+      </address>
+      <address name="schema-sync-in">
+        <anycast>
+          <queue name="schema-sync-in" />
+        </anycast>
+      </address>
+      <address name="schema-sync-out">
+        <anycast>
+          <queue name="schema-sync-out" />
+        </anycast>
+      </address>
     </addresses>
 
 

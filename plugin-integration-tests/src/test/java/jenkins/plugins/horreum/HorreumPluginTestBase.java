@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static java.lang.System.getProperty;
 import static io.hyperfoil.tools.horreum.it.Const.HORREUM_DEV_HORREUM_CONTAINER_PORT;
 
-public class HorreumPluginTestBase implements QuarkusTestBeforeEachCallback, QuarkusTestAfterEachCallback{
+public class HorreumPluginTestBase implements QuarkusTestBeforeEachCallback, QuarkusTestAfterEachCallback, QuarkusTestAfterConstructCallback{
 	public static final String HORREUM_UPLOAD_CREDENTIALS = "horreum-creds";
 	private static final Logger LOGGER = Logger.getLogger(HorreumPluginTestBase.class.getName());
 
@@ -116,5 +116,10 @@ public class HorreumPluginTestBase implements QuarkusTestBeforeEachCallback, Qua
 	public void afterEach(QuarkusTestMethodContext context) {
 		credentials.clear();
 		j.afterEach(context);
+	}
+
+	@Override
+	public void afterConstruct(Object testInstance) {
+
 	}
 }

@@ -33,11 +33,12 @@ THE SOFTWARE.
     <properties>
         <revision>0.1.5</revision>
         <changelist>-SNAPSHOT</changelist>
-        <horreum.version>0.13.1</horreum.version>
+        <horreum.version>0.14.3</horreum.version>
         <jenkins.version>2.361</jenkins.version>  <!-- jdk11 uses javax apis -->
         <version.maven.jar>3.4.1</version.maven.jar>
 <!--        <quarkus.version>3.10.2</quarkus.version> using 3.10.2 causes Resteasy client api issues when being loaded by Quarkus ExtensionLoader -->
-        <quarkus.version>3.8.4</quarkus.version>
+<!--        <quarkus.version>3.8.4</quarkus.version>-->
+        <quarkus.version>3.12.3</quarkus.version>
         <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
         <failsafe-plugin.version>3.3.1</failsafe-plugin.version>
         <dev.images.postgres>postgres:16</dev.images.postgres>
@@ -246,15 +247,11 @@ THE SOFTWARE.
                     <groupId>org.ow2.asm</groupId>
                     <artifactId>asm-commons</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>io.smallrye.common</groupId>
+                    <artifactId>smallrye-common-constraint</artifactId>
+                </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-bom</artifactId>
-            <version>${quarkus.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
         </dependency>
 
         <dependency>
@@ -454,27 +451,8 @@ THE SOFTWARE.
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>horreum</artifactId>
             <version>0.1.5-SNAPSHOT</version>
-<!--            <type>pom</type>-->
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>horreum</artifactId>
-            <version>0.1.5-SNAPSHOT</version>
-            <type>pom</type>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- hmm, fat jars do not play well with service loader
-         https://github.com/quarkusio/quarkus/issues/15643
-         -->
-<!--        <dependency>-->
-<!--            <groupId>io.hyperfoil.tools</groupId>-->
-<!--            <artifactId>horreum-integration-tests</artifactId>-->
-<!--            <version>${horreum.version}</version>-->
-<!--            <type>test-jar</type>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org.jenkins-ci.main</groupId>
@@ -498,6 +476,10 @@ THE SOFTWARE.
                 <exclusion>
                     <groupId>io.quarkus</groupId>
                     <artifactId>quarkus-resteasy-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.smallrye.common</groupId>
+                    <artifactId>smallrye-common-constraint</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -534,6 +516,12 @@ THE SOFTWARE.
             <artifactId>quarkus-test-common</artifactId>
             <version>${quarkus.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.smallrye.common</groupId>
+                    <artifactId>smallrye-common-constraint</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -584,6 +572,18 @@ THE SOFTWARE.
 <!--                </exclusion>-->
 <!--            </exclusions>-->
 <!--        </dependency>-->
+
+        <dependency>
+            <groupId>io.smallrye.common</groupId>
+            <artifactId>smallrye-common-constraint</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc-deployment</artifactId>
+            <version>${quarkus.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <developers>
         <developer>
