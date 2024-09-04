@@ -12,4 +12,7 @@ public interface Const {
     public static final String DEFAULT_AMQP_USERNAME = "horreum";
     public static final String DEFAULT_AMQP_PASSWORD = "secret";
     public static final String IN_CONTAINER_IP = "172.17.0.1";
+    public static final String DEFAULT_BOOTSTRAP_USERNAME = "horreum.bootstrap";
+    public static final String DEFAULT_BOOTSTRAP_PASSWORD = "secret";
+
 }

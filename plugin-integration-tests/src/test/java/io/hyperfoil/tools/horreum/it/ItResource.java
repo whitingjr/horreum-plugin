@@ -51,7 +51,7 @@ public class ItResource implements QuarkusTestResourceLifecycleManager {
                         Map.entry(HORREUM_DEV_KEYCLOAK_ADMIN_PASSWORD, DEFAULT_KC_ADMIN_PASSWORD),
                         Map.entry(HORREUM_DEV_HORREUM_IMAGE, horreumImage),
                         Map.entry(HORREUM_DEV_HORREUM_NETWORK_ALIAS, "172.17.0.1"),
-                        Map.entry("horreum.roles.provider", "keycloak"),
+                        Map.entry("horreum.roles.provider", "database"),
                         Map.entry("quarkus.keycloak.admin-client.client-id", "horreum-client"),
                         Map.entry("quarkus.keycloak.admin-client.realm", "horreum"),
                         Map.entry("quarkus.keycloak.admin-client.client-secret", "secret"),

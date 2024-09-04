@@ -4,9 +4,9 @@ import static jenkins.plugins.horreum.HorreumIntegrationClient.getHorreumClient;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URL;
-import java.util.Map;
 import java.util.logging.Logger;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import hudson.FilePath;
 import io.hyperfoil.tools.horreum.api.services.RunService;
 import io.hyperfoil.tools.horreum.it.profile.InContainerProfile;
@@ -23,7 +23,8 @@ public class HorreumUploadStepTest extends HorreumPluginTestBase {
    @Test
    public void testUpload() throws Exception {
       URL jsonResource = Thread.currentThread().getContextClassLoader().getResource("data/config-quickstart.jvm.json");
-      WorkflowJob proj = j.jenkins.createProject(WorkflowJob.class, "Horreum-Upload-Pipeline");
+      WorkflowJob proj = j.jenkins.createProject(WorkflowJob.class, "Horreum-Upload-Pipeline-testUpload");
+      io.hyperfoil.tools.horreum.api.data.Test dummyTest = createTest("upload-single", "dev-team");
       proj.setDefinition(new CpsFlowDefinition(
             "node {\n" +
             "def id = horreumUpload(\n" +
@@ -55,9 +56,11 @@ public class HorreumUploadStepTest extends HorreumPluginTestBase {
       URL jsonResource2 = Thread.currentThread().getContextClassLoader().getResource("data/another-file.json");
       assertNotNull(j);
       assertNotNull(j.jenkins);
-      WorkflowJob proj = j.jenkins.createProject(WorkflowJob.class, "Horreum-Upload-Pipeline");
+      WorkflowJob proj = j.jenkins.createProject(WorkflowJob.class, "Horreum-Upload-Pipeline-testUploadMultiple");
       FilePath folder = j.jenkins.getWorkspaceFor(proj).child("run");
       folder.child("config-quickstart.jvm.json").copyFrom(jsonResource1);
+      folder.child("another-file.json").copyFrom(jsonResource2);
+      io.hyperfoil.tools.horreum.api.data.Test dummyTest = createTest("upload-multiple", "dev-team");
       proj.setDefinition(new CpsFlowDefinition(
            "node {\n" +
            "def id = horreumUpload(\n" +
@@ -78,13 +81,13 @@ public class HorreumUploadStepTest extends HorreumPluginTestBase {
       RunService.RunsSummary summary = getHorreumClient().runService.listTestRuns(dummyTest.id, false, null, null, "", null);
       assertEquals(1, summary.total);
       assertEquals(1, summary.runs.size());
-      Object runObject = getHorreumClient().runService.getRun(summary.runs.get(0).id,summary.runs.get(0).token);
+      RunService.RunExtended runObject = getHorreumClient().runService.getRun(summary.runs.get(0).id,summary.runs.get(0).token);
       assertNotNull(runObject);
-      assertTrue(runObject instanceof Map,"run should return a map");
-      Object data = ((Map)runObject).get("data");
+      assertInstanceOf(RunService.RunExtended.class, runObject,"run should return a RunService.RunExtended");
+      Object data = runObject.data;
       assertNotNull(data);
-      assertTrue(data instanceof Map,"data should be a map");
-      assertEquals(2,((Map<?, ?>) data).size(),"data should have an entry for each file");
+      assertInstanceOf(ObjectNode.class, data,"data should be a ObjectNode");
+      assertEquals(2,((ObjectNode) data).size(),"data should have an entry for each file");
    }
 
    private static final Logger LOGGER = Logger.getLogger(HorreumUploadStepTest.class.getName());

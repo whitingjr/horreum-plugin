@@ -118,7 +118,6 @@ THE SOFTWARE.
 			<groupId>io.hyperfoil.tools</groupId>
 			<artifactId>horreum-client</artifactId>
 			<version>${horreum.version}</version>
-			<!-- Quarkus 2.8.2 seems to have mixed dependencies -->
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
