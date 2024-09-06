@@ -24,12 +24,12 @@ public class HorreumExpectStepTest extends HorreumPluginTestBase {
    @Test
    public void testExpect(TestInfo info) throws Exception {
       WorkflowJob proj = j.jenkins.createProject(WorkflowJob.class, "Horreum-Expect-Pipeline");
-      io.hyperfoil.tools.horreum.api.data.Test dummyTest = createTest("expect-step", "dev-team");
+      io.hyperfoil.tools.horreum.api.data.Test dummyTest = createTest(info.getTestClass() + "-expect-step", "dev-team");
       proj.setDefinition(new CpsFlowDefinition(
             "node {\n" +
             "horreumExpect(\n" +
             "credentials: '" + HorreumPluginTestBase.HORREUM_UPLOAD_CREDENTIALS + "',\n" +
-            "test: '" + info.getDisplayName() + "',\n" +
+            "test: '" + dummyTest.name + "',\n" +
             "timeout: 60,\n" +
             "expectedBy: 'Jenkins CI',\n" +
             "backlink: \"${env.BUILD_URL}\",\n" +

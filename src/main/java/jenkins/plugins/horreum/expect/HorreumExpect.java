@@ -1,43 +1,25 @@
 package jenkins.plugins.horreum.expect;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.annotation.Nonnull;
-import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.QueryParameter;
-
-import com.cloudbees.plugins.credentials.common.AbstractIdCredentialsListBoxModel;
-import com.cloudbees.plugins.credentials.common.StandardCredentials;
-import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
-import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
-import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Item;
-import hudson.security.ACL;
-import hudson.tasks.BuildStepDescriptor;
-import hudson.tasks.Builder;
-import hudson.util.ListBoxModel;
-import hudson.util.ListBoxModel.Option;
 import jenkins.plugins.horreum.HorreumBaseBuilder;
 import jenkins.plugins.horreum.HorreumBaseDescriptor;
-import jenkins.plugins.horreum.HorreumGlobalConfig;
 
 public class HorreumExpect extends HorreumBaseBuilder<HorreumExpectConfig> {
 
 	@DataBoundConstructor
 	public HorreumExpect(@Nonnull String credentials,
 								@Nonnull String test,
-								@Nonnull long timeout,
-								@Nonnull String expectedBy,
-								@Nonnull String backlink) {
+								@Nonnull Long timeout,
+								String expectedBy,
+								String backlink) {
 		super(new HorreumExpectConfig(credentials, test, timeout, expectedBy, backlink));
 	}
 

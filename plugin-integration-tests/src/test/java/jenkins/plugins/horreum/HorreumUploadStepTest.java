@@ -16,6 +16,7 @@ import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 @QuarkusIntegrationTest
 @TestProfile(InContainerProfile.class)
@@ -51,7 +52,7 @@ public class HorreumUploadStepTest extends HorreumPluginTestBase {
    }
 
    @Test
-   public void testUploadMultiple() throws Exception {
+   public void testUploadMultiple(TestInfo info) throws Exception {
       URL jsonResource1 = Thread.currentThread().getContextClassLoader().getResource("data/config-quickstart.jvm.json");
       URL jsonResource2 = Thread.currentThread().getContextClassLoader().getResource("data/another-file.json");
       assertNotNull(j);
@@ -60,7 +61,7 @@ public class HorreumUploadStepTest extends HorreumPluginTestBase {
       FilePath folder = j.jenkins.getWorkspaceFor(proj).child("run");
       folder.child("config-quickstart.jvm.json").copyFrom(jsonResource1);
       folder.child("another-file.json").copyFrom(jsonResource2);
-      io.hyperfoil.tools.horreum.api.data.Test dummyTest = createTest("upload-multiple", "dev-team");
+      io.hyperfoil.tools.horreum.api.data.Test dummyTest = createTest(info.getTestClass() + "-upload-multiple", "dev-team");
       proj.setDefinition(new CpsFlowDefinition(
            "node {\n" +
            "def id = horreumUpload(\n" +

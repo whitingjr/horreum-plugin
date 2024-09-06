@@ -63,7 +63,6 @@ public class HorreumProperResource implements ResourceLifecycleManager {
         prop("amqp-password", initArgs.get("amqp-password"));
         prop("amqp-reconnect-attempts" , "100");
         prop("amqp-reconnect-interval", "1000");
-        prop("horreum.test-mode", "true");
         prop("quarkus.profile", "test");
         prop("quarkus.test.profile", "test");
         prop("horreum.bootstrap.password", "secret");

@@ -57,11 +57,11 @@ THE SOFTWARE.
 	<properties>
 		<revision>0.1.5</revision>
 		<changelist>-SNAPSHOT</changelist>
-		<horreum.version>0.13.1</horreum.version>
+		<horreum.version>0.14.3</horreum.version>
 		<jenkins.version>2.361</jenkins.version>  <!-- jdk11 uses javax apis -->
 		<hpi-plugin.version>3.37</hpi-plugin.version>
 		<resteasy.version>6.2.7.Final</resteasy.version>
-		<keycloak.version>23.0.7</keycloak.version>
+		<keycloak.version>24.0.4</keycloak.version>
 		<maven.compiler.release>17</maven.compiler.release>
 	</properties>
 
@@ -175,20 +175,24 @@ THE SOFTWARE.
 					<groupId>org.jboss</groupId>
 					<artifactId>jandex</artifactId>
 				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.jboss.resteasy</groupId>
-			<artifactId>resteasy-jackson2-provider</artifactId>
-			<version>${resteasy.version}</version>
-			<exclusions>
 				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-core</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
+
+<!--		<dependency>-->
+<!--			<groupId>org.jboss.resteasy</groupId>-->
+<!--			<artifactId>resteasy-jackson2-provider</artifactId>-->
+<!--			<version>${resteasy.version}</version>-->
+<!--			<exclusions>-->
+<!--				<exclusion>-->
+<!--					<groupId>com.fasterxml.jackson.core</groupId>-->
+<!--					<artifactId>jackson-core</artifactId>-->
+<!--				</exclusion>-->
+<!--			</exclusions>-->
+<!--		</dependency>-->
 
 		<!-- Test framework -->
 		<dependency>
@@ -256,6 +260,11 @@ THE SOFTWARE.
 					<artifactId>jackson-core</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>2.17.2</version>
 		</dependency>
 	</dependencies>
 

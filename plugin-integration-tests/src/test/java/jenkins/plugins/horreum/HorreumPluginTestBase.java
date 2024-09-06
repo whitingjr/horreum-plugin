@@ -29,7 +29,7 @@ import static jenkins.plugins.horreum.HorreumIntegrationClient.instantiateClient
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static java.lang.System.getProperty;
 
-public class HorreumPluginTestBase implements QuarkusTestBeforeEachCallback, QuarkusTestAfterEachCallback{
+public class HorreumPluginTestBase implements QuarkusTestBeforeEachCallback{
 	public static final String HORREUM_UPLOAD_CREDENTIALS = "horreum-creds";
 	private static final Logger LOGGER = Logger.getLogger(HorreumPluginTestBase.class.getName());
 
@@ -101,10 +101,6 @@ public class HorreumPluginTestBase implements QuarkusTestBeforeEachCallback, Qua
 				throw new RuntimeException(throwable);
 			}
 		}
-	}
-
-	@Override
-	public void afterEach(QuarkusTestMethodContext context) {
 	}
 
 	Test createTest(String name,  String owner) {

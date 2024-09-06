@@ -1,7 +1,8 @@
 package jenkins.plugins.horreum.expect;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
+import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -14,7 +15,6 @@ import hudson.util.ListBoxModel;
 import jenkins.plugins.horreum.BaseExecutionContext;
 import jenkins.plugins.horreum.HorreumBaseDescriptor;
 import jenkins.plugins.horreum.HorreumBaseStep;
-import jenkins.plugins.horreum.HorreumGlobalConfig;
 
 public final class HorreumExpectStep extends HorreumBaseStep<HorreumExpectConfig> {
 
@@ -25,11 +25,6 @@ public final class HorreumExpectStep extends HorreumBaseStep<HorreumExpectConfig
 									 String expectedBy,
 									 String backlink) {
 		super(new HorreumExpectConfig(credentials, test, timeout, expectedBy, backlink));
-
-		//Populate step config from Global state
-		HorreumGlobalConfig globalConfig = HorreumGlobalConfig.get();
-		this.config.setKeycloakRealm(globalConfig.getKeycloakRealm());
-		this.config.setClientId(globalConfig.getClientId());
 	}
 
 	public String getTest() {
@@ -104,10 +99,10 @@ public final class HorreumExpectStep extends HorreumBaseStep<HorreumExpectConfig
 
 		@Override
 		protected BaseExecutionContext<Void> createExecutionContext() throws Exception {
-			//TODO:: obtain reference to envVars
-			/* To get the contextual environment in a Step, you can inject EnvVars using @StepContextParameter;*/
-			return HorreumExpectExecutionContext.from(step.config, null, getContext().get(TaskListener.class));
+			StepContext context = getContext();
+			return HorreumExpectExecutionContext.from(step.config, null, context.get(TaskListener.class));
 		}
+
 
 		private static final long serialVersionUID = 1L;
 	}

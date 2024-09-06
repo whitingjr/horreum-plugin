@@ -16,15 +16,16 @@ import org.junit.jupiter.api.Test;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import jenkins.plugins.horreum.expect.HorreumExpect;
+import org.junit.jupiter.api.TestInfo;
 
 @QuarkusIntegrationTest
 @TestProfile(InContainerProfile.class)
 public class HorreumExpectTest extends HorreumPluginTestBase {
 	@Test
-	public void testExpectRun() throws Exception {
-		io.hyperfoil.tools.horreum.api.data.Test dummyTest = createTest("expect", "dev-team");
+	public void testExpectRun(TestInfo info) throws Exception {
+		io.hyperfoil.tools.horreum.api.data.Test dummyTest = createTest(info.getTestClass() + "-expect", "dev-team");
 		HorreumExpect horreumExpect = new HorreumExpect(
-				HORREUM_UPLOAD_CREDENTIALS, dummyTest.name, 60, "Jenkins CI", "$BUILD_URL"
+				HORREUM_UPLOAD_CREDENTIALS, dummyTest.name, 60L, "Jenkins CI", "$BUILD_URL"
 		);
 
 		// Run build

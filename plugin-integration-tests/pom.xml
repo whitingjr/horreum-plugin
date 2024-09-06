@@ -543,12 +543,6 @@ THE SOFTWARE.
             <version>${keycloak.version}</version>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.jenkins-ci.plugins.workflow</groupId>-->
-<!--            <artifactId>script-security</artifactId>-->
-<!--            <version>1189.vb_a_b_7c8fd5fde</version>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-support</artifactId>
@@ -560,18 +554,6 @@ THE SOFTWARE.
                 </exclusion>
             </exclusions>
         </dependency>
-
-<!--        <dependency> this is necessary for 3.10.2 Quarkus to avoid the ExtensionLoader having issues loading Resteast client  -->
-<!--            <groupId>io.quarkus</groupId>-->
-<!--            <artifactId>quarkus-resteasy-client-jackson</artifactId>-->
-<!--            <version>3.8.4</version>-->
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.jboss.resteasy</groupId>-->
-<!--                    <artifactId>resteasy-client</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>io.smallrye.common</groupId>

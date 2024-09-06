@@ -19,6 +19,7 @@ import io.hyperfoil.tools.horreum.it.profile.InContainerProfile;
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 import io.quarkus.test.junit.TestProfile;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.jvnet.hudson.test.CreateFileBuilder;
 
 import hudson.model.FreeStyleBuild;
@@ -30,9 +31,9 @@ import jenkins.plugins.horreum.upload.HorreumUpload;
 @TestProfile(InContainerProfile.class)
 public class HorreumUploadTest extends HorreumPluginTestBase {
 	@Test
-	public void testUpload() throws Exception {
+	public void testUpload(TestInfo info) throws Exception {
 		URL jsonResource = Thread.currentThread().getContextClassLoader().getResource("data/config-quickstart.jvm.json");
-		io.hyperfoil.tools.horreum.api.data.Test dummyTest = createTest("upload-single", "dev-team");
+		io.hyperfoil.tools.horreum.api.data.Test dummyTest = createTest(info.getTestClass() + "-upload-single", "dev-team");
 
 		// Prepare HttpRequest#
 		HorreumUpload horreumUpload = new HorreumUpload(
@@ -52,10 +53,10 @@ public class HorreumUploadTest extends HorreumPluginTestBase {
 	}
 
 	@Test
-	public void testUploadMultiple() throws Exception {
+	public void testUploadMultiple(TestInfo info) throws Exception {
 		String json1 = readFile("data/config-quickstart.jvm.json");
 		String json2 = readFile("data/another-file.json");
-		io.hyperfoil.tools.horreum.api.data.Test dummyTest = createTest("upload-multiple", "dev-team");
+		io.hyperfoil.tools.horreum.api.data.Test dummyTest = createTest(info.getTestClass() + "-upload-multiple", "dev-team");
 
 		addSchema("Some schema", "urn:some-schema", dummyTest);
 		addSchema("Foobar", "urn:foobar", dummyTest);
