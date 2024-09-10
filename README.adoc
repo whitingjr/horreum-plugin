@@ -45,7 +45,7 @@ horreumUpload (
 
 ----
 
-You can access the response status code and content within a groovy script:
+You can access the response content within a groovy script:
 
 [source,groovy]
 ----
@@ -60,17 +60,18 @@ def response = horreumUpload (
     abortOnfailure: false,
     quiet: false
 )
-println("Status: "+response.status)
-println("Content: "+response.content)
+println("Content: "+response)
 ----
 
 == Building
 
-The plugin can be built and tested locally using a Maven HPI:
+The plugin can be built and tested locally using Maven:
 
 [source, bash]
 ----
-mvn hpi:run
+mvn install
+cd plugin-integration-tests
+mvn package -DskipTests=true;mvn test
 ----
 
 == Configure Global Settings

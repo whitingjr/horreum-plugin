@@ -60,7 +60,6 @@ THE SOFTWARE.
 		<horreum.version>0.14.3</horreum.version>
 		<jenkins.version>2.361</jenkins.version>  <!-- jdk11 uses javax apis -->
 		<hpi-plugin.version>3.37</hpi-plugin.version>
-		<resteasy.version>6.2.7.Final</resteasy.version>
 		<keycloak.version>24.0.4</keycloak.version>
 		<maven.compiler.release>17</maven.compiler.release>
 	</properties>
@@ -93,138 +92,34 @@ THE SOFTWARE.
 		</pluginRepository>
 	</pluginRepositories>
 
-	<build>
-		<testResources>
-			<testResource>
-				<directory>src/test/resources</directory>
-				<filtering>false</filtering>
-				<includes>
-					<include>**/*</include>
-				</includes>
-			</testResource>
-			<testResource>
-				<directory>${project.basedir}/work</directory>
-				<filtering>false</filtering>
-				<includes>
-					<include>**</include>
-				</includes>
-			</testResource>
-		</testResources>
-	</build>
-
 	<dependencies>
-
 		<dependency>
 			<groupId>io.hyperfoil.tools</groupId>
 			<artifactId>horreum-client</artifactId>
 			<version>${horreum.version}</version>
 			<exclusions>
 				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.jboss.logging</groupId>
-					<artifactId>jboss-logging</artifactId>
-				</exclusion>
-				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>io.smallrye.config</groupId>
-					<artifactId>smallrye-config</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>io.smallrye.common</groupId>
-					<artifactId>smallrye-common-annotation</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>org.eclipse.microprofile.config</groupId>
 					<artifactId>microprofile-config-api</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>org.eclipse.microprofile.context-propagation</groupId>
-					<artifactId>microprofile-context-propagation-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>io.vertx</groupId>
-					<artifactId>vertx-core</artifactId>
-				</exclusion>
-				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-annotations</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>jakarta.annotation</groupId>
-					<artifactId>jakarta.annotation-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.kohsuke.stapler</groupId>
-					<artifactId>stapler</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.jboss.resteasy</groupId>
-					<artifactId>resteasy-client</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.glassfish.jaxb</groupId>
-					<artifactId>jaxb-runtime</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.jboss</groupId>
-					<artifactId>jandex</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-core</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
-
-<!--		<dependency>-->
-<!--			<groupId>org.jboss.resteasy</groupId>-->
-<!--			<artifactId>resteasy-jackson2-provider</artifactId>-->
-<!--			<version>${resteasy.version}</version>-->
-<!--			<exclusions>-->
-<!--				<exclusion>-->
-<!--					<groupId>com.fasterxml.jackson.core</groupId>-->
-<!--					<artifactId>jackson-core</artifactId>-->
-<!--				</exclusion>-->
-<!--			</exclusions>-->
-<!--		</dependency>-->
 
 		<!-- Test framework -->
-		<dependency>
-			<groupId>jakarta.ws.rs</groupId>
-			<artifactId>jakarta.ws.rs-api</artifactId>
-			<version>3.1.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<dependency>
 			<groupId>org.apache.maven.wagon</groupId>
 			<artifactId>wagon-http-shared</artifactId>
 			<version>3.5.3</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.codehaus.plexus</groupId>
-					<artifactId>plexus-utils</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>commons-codec</groupId>
-					<artifactId>commons-codec</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>credentials</artifactId>
@@ -242,25 +137,8 @@ THE SOFTWARE.
 			<groupId>org.keycloak</groupId>
 			<artifactId>keycloak-core</artifactId>
 			<version>${keycloak.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-core</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
-		<dependency>
-			<groupId>org.keycloak</groupId>
-			<artifactId>keycloak-adapter-core</artifactId>
-			<version>${keycloak.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-core</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>

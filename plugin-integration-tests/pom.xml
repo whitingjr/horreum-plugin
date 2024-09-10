@@ -35,17 +35,13 @@ THE SOFTWARE.
         <changelist>-SNAPSHOT</changelist>
         <horreum.version>0.14.3</horreum.version>
         <jenkins.version>2.361</jenkins.version>  <!-- jdk11 uses javax apis -->
-        <version.maven.jar>3.4.1</version.maven.jar>
-<!--        <quarkus.version>3.10.2</quarkus.version> using 3.10.2 causes Resteasy client api issues when being loaded by Quarkus ExtensionLoader -->
-<!--        <quarkus.version>3.8.4</quarkus.version>-->
         <quarkus.version>3.12.3</quarkus.version>
         <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
         <failsafe-plugin.version>3.3.1</failsafe-plugin.version>
         <dev.images.postgres>postgres:16</dev.images.postgres>
-        <keycloak.version>23.0.7</keycloak.version>
+        <keycloak.version>24.0.4</keycloak.version>
         <dev.images.keycloak>quay.io/keycloak/keycloak:${keycloak.version}</dev.images.keycloak>
         <dev.images.native.builder-image>quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-11</dev.images.native.builder-image>
-        <hpi-plugin.version>3.37</hpi-plugin.version>
         <dev.images.horreum>quay.io/hyperfoil/horreum:${horreum.version}</dev.images.horreum>
         <dev.images.amqp>apache/activemq-artemis:2.32.0</dev.images.amqp>
     </properties>
@@ -187,33 +183,6 @@ THE SOFTWARE.
                     </execution>
                 </executions>
             </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <version>3.1.0</version>
-                    <executions>
-                        <execution>
-                            <phase>generate-test-resources</phase>
-                            <configuration>
-                                <target>
-                                    <mkdir dir="${project.build.directory}/tmp"/>
-                                    <mkdir dir="${project.build.outputDirectory}/test-classes"/>
-                                    <mkdir dir="${project.build.outputDirectory}/test-classes/jobs"/>
-                                    <mkdir dir="${project.build.outputDirectory}/test-classes/nodes"/>
-                                    <mkdir dir="${project.build.outputDirectory}/work"/>
-                                    <copy todir="${basedir}/work" failonerror="false">
-                                        <fileset dir="${basedir}/../work" includes="*"/>
-                                    </copy>
-                                </target>
-                            </configuration>
-                            <goals>
-                                <goal>run</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-
         </plugins>
     </build>
 
@@ -222,48 +191,6 @@ THE SOFTWARE.
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
             <version>${quarkus.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.platform</groupId>
-                    <artifactId>junit-platform-launcher</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.thoughtworks.xstream</groupId>
-                    <artifactId>xstream</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jakarta.annotation</groupId>
-                    <artifactId>jakarta.annotation-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.fusesource.jansi</groupId>
-                    <artifactId>jansi</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.ow2.asm</groupId>
-                    <artifactId>asm-util</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.ow2.asm</groupId>
-                    <artifactId>asm-commons</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.smallrye.common</groupId>
-                    <artifactId>smallrye-common-constraint</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.ws.rs</groupId>
-            <artifactId>jakarta.ws.rs-api</artifactId>
-            <version>3.1.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>jakarta.activation</groupId>
-                    <artifactId>jakarta.activation-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -283,12 +210,6 @@ THE SOFTWARE.
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-basic-steps</artifactId>
             <version>994.vd57e3ca_46d24</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpcore-nio</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -307,108 +228,13 @@ THE SOFTWARE.
             <groupId>org.jenkins-ci.main</groupId>
             <artifactId>jenkins-core</artifactId>
             <version>${jenkins.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>jakarta.servlet</groupId>
-                    <artifactId>jakarta.servlet-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.jenkins.stapler</groupId>
-                    <artifactId>jenkins-stapler-support</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.kohsuke.stapler</groupId>
-                    <artifactId>json-lib</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.kohsuke.stapler</groupId>
-                    <artifactId>stapler-adjunct-codemirror</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.kohsuke.stapler</groupId>
-                    <artifactId>stapler-adjunct-timeline</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.kohsuke.stapler</groupId>
-                    <artifactId>stapler</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-compress</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jenkins-ci.main</groupId>
-            <artifactId>jenkins-war</artifactId>
-            <version>${jenkins.version}</version>
-            <type>war</type>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>io.hyperfoil.tools</groupId>
             <artifactId>horreum-client</artifactId>
             <version>${horreum.version}</version>
-            <!-- Quarkus 2.8.2 seems to have mixed dependencies -->
             <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.logging</groupId>
-                    <artifactId>jboss-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.smallrye.config</groupId>
-                    <artifactId>smallrye-config</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.smallrye.common</groupId>
-                    <artifactId>smallrye-common-annotation</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.eclipse.microprofile.config</groupId>
-                    <artifactId>microprofile-config-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.eclipse.microprofile.context-propagation</groupId>
-                    <artifactId>microprofile-context-propagation-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.vertx</groupId>
-                    <artifactId>vertx-core</artifactId>
-                </exclusion>
-<!--                <exclusion>-->
-<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
-<!--                    <artifactId>jackson-annotations</artifactId>-->
-<!--                </exclusion>-->
-                <exclusion>
-                    <groupId>jakarta.annotation</groupId>
-                    <artifactId>jakarta.annotation-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.kohsuke.stapler</groupId>
-                    <artifactId>stapler</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.glassfish.jaxb</groupId>
-                    <artifactId>jaxb-runtime</artifactId>
-                </exclusion>
                 <exclusion>
                     <groupId>org.jboss</groupId>
                     <artifactId>jandex</artifactId>
@@ -417,34 +243,15 @@ THE SOFTWARE.
         </dependency>
 
         <dependency>
-            <groupId>net.sf.json-lib</groupId>
-            <artifactId>json-lib</artifactId>
-            <version>2.4</version>
-            <classifier>jdk13</classifier>
-        </dependency>
-
-        <dependency>
             <groupId>org.kohsuke.stapler</groupId>
             <artifactId>stapler</artifactId>
             <version>1711.1713.vc400cfb_5597a_</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>jakarta.annotation</groupId>
-                    <artifactId>jakarta.annotation-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
             <version>2.1.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>4.0.1</version>
         </dependency>
 
         <dependency>
@@ -472,30 +279,6 @@ THE SOFTWARE.
             <artifactId>horreum-infra-common</artifactId>
             <version>${horreum.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.quarkus</groupId>
-                    <artifactId>quarkus-resteasy-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.smallrye.common</groupId>
-                    <artifactId>smallrye-common-constraint</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-client</artifactId>
-            <version>3.8.4</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>1.19.6</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -516,43 +299,6 @@ THE SOFTWARE.
             <artifactId>quarkus-test-common</artifactId>
             <version>${quarkus.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.smallrye.common</groupId>
-                    <artifactId>smallrye-common-constraint</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jenkins-ci.main</groupId>
-            <artifactId>jenkins-test-harness</artifactId>
-            <version>2.69</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-core</artifactId>
-            <version>${keycloak.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.keycloak</groupId>
-            <artifactId>keycloak-adapter-core</artifactId>
-            <version>${keycloak.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-support</artifactId>
-            <version>839.v35e2736cfd5c</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jenkins-ci.plugins.workflow</groupId>
-                    <artifactId>script-security</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
