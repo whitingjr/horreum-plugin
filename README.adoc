@@ -45,7 +45,7 @@ horreumUpload (
 
 ----
 
-You can access the response status code and content within a groovy script:
+You can access the response within a groovy script:
 
 [source,groovy]
 ----
@@ -60,13 +60,32 @@ def response = horreumUpload (
     abortOnfailure: false,
     quiet: false
 )
-println("Status: "+response.status)
-println("Content: "+response.content)
+println("Response: "+response)
 ----
+
+The created Run ID by Horreum is provided in the response.
 
 == Building
 
-The plugin can be built and tested locally using a Maven HPI:
+The plugin can be built using Maven
+
+[source, bash]
+----
+mvn package -DskipTests=true
+----
+
+== Testing
+
+Testing using Maven and JUnit:
+
+[source, bash]
+----
+mvn test
+----
+
+== Stand up Jenkins server instance
+
+The [Maven HPI plugin](https://jenkinsci.github.io/maven-hpi-plugin/) is used for standing up a Jenkins instance.
 
 [source, bash]
 ----

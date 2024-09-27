@@ -1,18 +1,10 @@
 package jenkins.plugins.horreum.auth;
 
 import java.io.Serializable;
-import java.util.List;
-
-import com.cloudbees.plugins.credentials.CredentialsMatchers;
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.common.StandardCredentials;
-import com.cloudbees.plugins.credentials.common.UsernamePasswordCredentials;
 
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
-import hudson.security.ACL;
-import jenkins.model.Jenkins;
 
 public class KeycloakAuthentication extends AbstractDescribableImpl<KeycloakAuthentication> implements Serializable {
 
