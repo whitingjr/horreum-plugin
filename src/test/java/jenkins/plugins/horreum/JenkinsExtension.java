@@ -9,6 +9,7 @@ import org.junit.runner.Description;
 
 // Copied from https://issues.jenkins.io/browse/JENKINS-48466
 public class JenkinsExtension extends org.jvnet.hudson.test.JenkinsRule implements BeforeEachCallback, AfterEachCallback {
+
    @Override
    public void beforeEach(ExtensionContext context) throws Exception {
       this.testDescription = Description.createTestDescription(

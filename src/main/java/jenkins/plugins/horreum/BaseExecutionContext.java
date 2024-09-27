@@ -47,11 +47,9 @@ public abstract class BaseExecutionContext<R> extends MasterToSlaveCallable<R, R
       this.remoteLogger = new RemoteOutputStream(new CloseProofOutputStream(logger));
       this.localLogger = logger;
 
-      //Retrieve Credentials
-      //TODO:: pass in DomainRequirement
       List<StandardCredentials> credentialsList = CredentialsProvider.lookupCredentials(
-            StandardCredentials.class, // (1)
-            Jenkins.get(), // (1)
+            StandardCredentials.class,
+            Jenkins.get(),
             ACL.SYSTEM,
             Collections.emptyList()
       ) ;
@@ -143,9 +141,6 @@ public abstract class BaseExecutionContext<R> extends MasterToSlaveCallable<R, R
    protected HorreumClient createClient() {
       HorreumClient.Builder clientBuilder = new HorreumClient.Builder()
             .horreumUrl(url)
-            .keycloakUrl(keycloak.getBaseUrl())
-            .keycloakRealm(keycloak.getRealm())
-            .clientId(keycloak.getClientId())
             .horreumUser(usernameCredentials.getUsername())
             .horreumPassword(usernameCredentials.getPassword().getPlainText());
       return clientBuilder.build();
